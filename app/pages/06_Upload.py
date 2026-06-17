@@ -100,7 +100,15 @@ if uploaded_file and company_name:
 
     compare_df = pd.DataFrame(rows).set_index("Metric")
     st.bar_chart(compare_df)
-
+# --- AI Insights ---
+    st.divider()
+    st.subheader("🤖 AI Consultant Insights")
+    if st.button("✨ Generate AI Analysis"):
+        with st.spinner("Analyzing with Claude AI..."):
+            from engine.ai_insights import generate_insights
+            insight = generate_insights(company_name, sector_choice, data, scores)
+        st.markdown(insight)
+        
     # --- Save to DB ---
     if st.button("💾 Save to Database"):
         with engine.connect() as conn:

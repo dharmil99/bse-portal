@@ -164,3 +164,32 @@ if selected:
         display_df.columns = ['Quarter','ROE%','ROCE%','Net Margin%',
                                'Rev Growth%','EBITDA Margin%']
         st.dataframe(display_df.set_index('Quarter'), use_container_width=True)
+        # --- AI Insights ---
+st.divider()
+st.subheader("🤖 AI Consultant Insights")
+st.caption("AI-powered analysis based on this company's financials")
+
+if st.button("✨ Generate AI Analysis"):
+    try:
+        import sys
+        sys.path.insert(0, r'C:\Users\Jignesh\Desktop\bse_portal')
+        from engine.ai_insights import generate_insights
+
+        # Build ratios dict from what's already on the page
+        ratios = {
+            "net_margin":     latest_ratios.get("net_margin", 0),
+            "ebitda_margin":  latest_ratios.get("ebitda_margin", 0),
+            "roce":           latest_ratios.get("roce", 0),
+            "debt_to_equity": latest_ratios.get("debt_to_equity", 0),
+        }
+        scores = {
+            "total_score": latest_score.get("total_score", 0),
+            "label":       latest_score.get("label", "N/A"),
+        }
+
+        with st.spinner("Analyzing with Claude AI..."):
+            insight = generate_insights(selected_company, selected_sector, ratios, scores)
+        st.markdown(insight)
+
+    except Exception as e:
+        st.info("🔑 AI Insights requires Anthropic API credits. Coming soon!")
