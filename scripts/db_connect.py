@@ -9,7 +9,7 @@ def get_engine():
     user     = os.getenv("DB_USER")
     password = os.getenv("DB_PASSWORD")
     database = os.getenv("DB_NAME")
-    
+
     url = f"mysql+pymysql://{user}:{password}@{host}/{database}"
     engine = create_engine(url)
     return engine
