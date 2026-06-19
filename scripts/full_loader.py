@@ -33,6 +33,22 @@ FILE_MAP = {
     "TCS":              "Tata Consultancy Services",
     "TechMahindra":     "Tech Mahindra Limited",
     "Wipro":            "Wipro Limited",
+    "Hero Motocorp":        "Hero MotoCorp Limited",
+    "TVS Motor Co":         "TVS Motor Company",
+    "Eicher Motors":        "Eicher Motors Limited",
+    "Ashok Leyland":        "Ashok Leyland Limited",
+    "Bosch":                "Bosch Limited",
+    "MRF":                  "MRF Limited",
+    "Apollo Tyres":         "Apollo Tyres Limited",
+    "CEAT":                 "CEAT Limited",
+    "Balkrishna Inds":      "Balkrishna Industries",
+    "Samvardh. Mothe":      "Samvardhana Motherson",
+    "Minda Corp":           "Minda Industries Limited",
+    "Sona BLW Precis":      "Sona BLW Precision",
+    "Endurance Tech":       "Endurance Technologies",
+    "Escorts Kubota":       "Escorts Kubota Limited",
+    "Force Motors":         "Force Motors Limited",
+    "Atul Auto":            "Atul Auto Limited",
 }
 
 def excel_date_to_year(val):
