@@ -270,3 +270,4 @@ if __name__ == "__main__":
     if skipped > 0:
         print("\nFor skipped companies — download their Excel from")
         print("screener.in and save to: " + RAW_DIR)
+        
