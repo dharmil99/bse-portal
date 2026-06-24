@@ -19,22 +19,25 @@ AUTO_COMPANIES = [
     "Sona BLW Precision", "Endurance Technologies", "Escorts Kubota Limited",
     "Force Motors Limited", "Atul Auto Limited"
 ]
-
 RATIO_WEIGHTS = {
+    # Profitability = 35%
     "Net Profit Margin":       0.10,
     "EBITDA Margin":           0.10,
     "ROE":                     0.08,
-    "ROCE":                    0.07,
-    "Operating Profit Margin": 0.05,
+    "ROCE":                    0.05,
+    "Operating Profit Margin": 0.02,
+    # Growth = 25%
     "Revenue Growth YoY":      0.10,
     "3Y Revenue CAGR":         0.08,
-    "NP Growth YoY":           0.07,
+    "NP Growth YoY":           0.05,
+    "EPS Growth YoY":          0.02,
+    # Efficiency = 20%
     "Asset Turnover":          0.07,
     "Debtor Days":             0.05,
     "Inventory Turnover":      0.08,
+    # Safety = 20%
     "Debt to Equity":          0.08,
     "Interest Coverage":       0.07,
-    "EPS Growth YoY":          0.05,
     "Current Ratio":           0.05,
 }
 
