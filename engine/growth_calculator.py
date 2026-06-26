@@ -21,13 +21,29 @@ def compute_cagr(rev_end, rev_start, years):
     return round(((float(rev_end) / float(rev_start)) ** (1 / years) - 1) * 100, 2)
 
 def get_company_revenues(company_id):
+    # First try quarterly_results
     result = conn.execute(text("""
         SELECT quarter, period_end, revenue
         FROM quarterly_results
         WHERE company_id = :cid AND revenue IS NOT NULL
         ORDER BY period_end ASC
     """), {"cid": company_id})
-    return result.fetchall()
+    rows = result.fetchall()
+    
+    # If not found, fall back to profit_loss table
+    if len(rows) < 2:
+        result2 = conn.execute(text("""
+            SELECT 
+                CONCAT('Q4', fiscal_year) as quarter,
+                CONCAT('20', SUBSTRING(fiscal_year, 3), '-03-31') as period_end,
+                sales as revenue
+            FROM profit_loss
+            WHERE company_id = :cid AND sales IS NOT NULL
+            ORDER BY fiscal_year ASC
+        """), {"cid": company_id})
+        rows = result2.fetchall()
+    
+    return rows
 
 def calculate_growth_for_all():
     # Get all companies
@@ -84,16 +100,30 @@ def calculate_growth_for_all():
                     rev_current, rev_by_year[year_5ago], 5
                 )
 
-            # EBITDA Margin — fetch from quarterly_results
+            # EBITDA Margin — try quarterly_results first, then profit_loss
             qr = conn.execute(text("""
                 SELECT ebitda, revenue FROM quarterly_results
                 WHERE company_id = :cid AND quarter = :q
             """), {"cid": company_id, "q": quarter}).fetchone()
 
             ebitda_margin = None
-            if qr and qr[0] and qr[1] and qr[1] != 0:
-                ebitda_margin = round((qr[0] / qr[1]) * 100, 2)
-
+            if qr and qr[0] and qr[1] and float(qr[1]) != 0:
+                ebitda_margin = round((float(qr[0]) / float(qr[1])) * 100, 2)
+            else:
+                # Fall back to profit_loss
+                fy = f"FY{quarter[4:]}"
+                pl_row = conn.execute(text("""
+                    SELECT net_profit, interest, depreciation, sales
+                    FROM profit_loss
+                    WHERE company_id = :cid AND fiscal_year = :fy
+                """), {"cid": company_id, "fy": fy}).fetchone()
+                if pl_row and pl_row[3] and float(pl_row[3]) != 0:
+                    np  = float(pl_row[0] or 0)
+                    int_= float(pl_row[1] or 0)
+                    dep = float(pl_row[2] or 0)
+                    rev = float(pl_row[3])
+                    ebitda_margin = round((np + int_ + dep) / rev * 100, 2)
+                    
             # Update financial_ratios table
             try:
                 conn.execute(text("""
