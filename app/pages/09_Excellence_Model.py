@@ -145,13 +145,25 @@ AUTO_COMPANIES = [
 ]
 
 RATIO_WEIGHTS = {
-    "Net Profit Margin": 0.10, "EBITDA Margin": 0.10,
-    "ROE": 0.08, "ROCE": 0.07, "Operating Profit Margin": 0.05,
-    "Revenue Growth YoY": 0.10, "3Y Revenue CAGR": 0.08,
-    "NP Growth YoY": 0.07, "Asset Turnover": 0.07,
-    "Debtor Days": 0.05, "Inventory Turnover": 0.08,
-    "Debt to Equity": 0.08, "Interest Coverage": 0.07,
-    "EPS Growth YoY": 0.05, "Current Ratio": 0.05,
+    # Profitability = 35%
+    "Net Profit Margin":       0.10,
+    "EBITDA Margin":           0.10,
+    "ROE":                     0.08,
+    "ROCE":                    0.05,
+    "Operating Profit Margin": 0.02,
+    # Growth = 25%
+    "Revenue Growth YoY":      0.10,
+    "3Y Revenue CAGR":         0.08,
+    "NP Growth YoY":           0.05,
+    "EPS Growth YoY":          0.02,
+    # Efficiency = 20%
+    "Asset Turnover":          0.07,
+    "Debtor Days":             0.05,
+    "Inventory Turnover":      0.08,
+    # Safety = 20%
+    "Debt to Equity":          0.08,
+    "Interest Coverage":       0.07,
+    "Current Ratio":           0.05,
 }
 
 HIGHER_BETTER = {
@@ -430,7 +442,123 @@ with tab1:
                                             cmap="RdYlGn", vmin=20, vmax=90),
         use_container_width=True, hide_index=True
     )
+# ── Visual Category Comparison ─────────────────────────
+st.markdown('<div class="section-hdr">Category Score Breakdown — Top 5 vs Bottom 5</div>', 
+            unsafe_allow_html=True)
 
+import plotly.graph_objects as go
+
+top5    = [c for c,_ in ranked[:5]]
+bottom5 = [c for c,_ in ranked[-5:]]
+compare_companies = top5 + bottom5
+
+categories = ["Profitability", "Growth", "Efficiency", "Safety"]
+colors = ["#1F6FEB", "#3FB950", "#A371F7", "#F0883E"]
+
+fig = go.Figure()
+
+for cat, color in zip(categories, colors):
+    fig.add_trace(go.Bar(
+        name=cat,
+        x=[c.replace(" Limited","").replace(" India","")
+           for c in compare_companies],
+        y=[cat_scores[c][cat] for c in compare_companies],
+        marker_color=color,
+        opacity=0.85
+    ))
+
+fig.add_vline(
+    x=4.5,
+    line_dash="dash",
+    line_color="#8B949E",
+    annotation_text="Top 5 | Bottom 5",
+    annotation_font_color="#8B949E"
+)
+
+fig.update_layout(
+    barmode="group",
+    height=420,
+    paper_bgcolor="#0D1117",
+    plot_bgcolor="#0D1117",
+    font=dict(color="#E6EDF3", size=11),
+    legend=dict(
+        orientation="h",
+        yanchor="bottom", y=1.02,
+        xanchor="right", x=1,
+        bgcolor="rgba(0,0,0,0)"
+    ),
+    xaxis=dict(gridcolor="#21262D", tickangle=-20),
+    yaxis=dict(gridcolor="#21262D", title="Percentile Score"),
+    margin=dict(t=40, b=60)
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+# ── Why Eicher wins — auto-generated insight ──────────
+st.markdown('<div class="section-hdr">Why the Top Company Leads</div>', 
+            unsafe_allow_html=True)
+
+top_co   = ranked[0][0]
+top_s    = ranked[0][1]
+top_short = top_co.replace(" Limited","").replace(" India","")
+sector_avg_score = round(sum(s for _,s in ranked) / len(ranked), 1)
+
+# Find their strongest and weakest category
+best_cat  = max(CATEGORIES.keys(), 
+                key=lambda c: cat_scores[top_co][c])
+worst_cat = min(CATEGORIES.keys(), 
+                key=lambda c: cat_scores[top_co][c])
+
+# Find top 3 strongest ratios
+top_ratios = sorted(
+    [(r, pct_scores[top_co][r]) for r in RATIO_WEIGHTS],
+    key=lambda x: x[1], reverse=True
+)[:3]
+
+insight_col1, insight_col2 = st.columns([1, 1])
+
+with insight_col1:
+    st.markdown(f"""
+    <div class="score-card" style="border-color:#1F6FEB">
+        <div class="rank-badge">🏆 Why {top_short} ranks #1</div>
+        <div style="margin-top:12px; color:#E6EDF3; font-size:0.9rem; line-height:1.7">
+            <b>{top_short}</b> scores <b style="color:#3FB950">{top_s}/100</b> vs 
+            sector average of <b style="color:#E3B341">{sector_avg_score}/100</b> — 
+            outperforming peers by <b style="color:#3FB950">
+            +{round(top_s - sector_avg_score, 1)} points</b>.<br><br>
+            Strongest pillar: <b style="color:#1F6FEB">{best_cat} 
+            ({cat_scores[top_co][best_cat]:.0f}/100)</b><br>
+            Area to watch: <b style="color:#F0883E">{worst_cat} 
+            ({cat_scores[top_co][worst_cat]:.0f}/100)</b>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with insight_col2:
+    st.markdown(f"""
+    <div class="score-card" style="border-color:#3FB950">
+        <div class="rank-badge">📊 Top 3 Strongest Ratios</div>
+        <div style="margin-top:12px">
+    """, unsafe_allow_html=True)
+
+    for ratio_name, pct in top_ratios:
+        actual_val = all_ratios[top_co].get(ratio_name)
+        val_str = f"{actual_val:.1f}" if actual_val is not None else "N/A"
+        st.markdown(f"""
+        <div style="display:flex; justify-content:space-between; 
+                    align-items:center; padding:6px 0; 
+                    border-bottom:1px solid #21262D">
+            <span style="color:#E6EDF3; font-size:0.85rem">
+                {ratio_name}
+            </span>
+            <span style="color:#3FB950; font-weight:700; font-size:0.9rem">
+                {pct:.0f}th pct &nbsp;
+                <span style="color:#8B949E; font-weight:400">
+                    ({val_str})
+                </span>
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════
 # TAB 2 — RATIO HEATMAP

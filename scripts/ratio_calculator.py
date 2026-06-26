@@ -11,19 +11,34 @@ conn = engine.connect()
 # ── Pure math functions — each checks for divide by zero ──────────────────
 
 def compute_net_margin(net_profit, revenue):
-    if not revenue or revenue == 0:
+    try:
+        if net_profit is None or revenue is None:
+            return None
+        if float(revenue) == 0:
+            return None
+        return round((float(net_profit) / float(revenue)) * 100, 2)
+    except:
         return None
-    return round((net_profit / revenue) * 100, 2)
 
 def compute_ebitda_margin(ebitda, revenue):
-    if not revenue or revenue == 0:
+    try:
+        if ebitda is None or revenue is None:
+            return None
+        if float(revenue) == 0:
+            return None
+        return round((float(ebitda) / float(revenue)) * 100, 2)
+    except:
         return None
-    return round((ebitda / revenue) * 100, 2)
 
 def compute_roe(net_profit, equity):
-    if not equity or equity == 0:
+    try:
+        if net_profit is None or equity is None:
+            return None
+        if float(equity) == 0:
+            return None
+        return round((float(net_profit) / float(equity)) * 100, 2)
+    except:
         return None
-    return round((net_profit / equity) * 100, 2)
 
 def compute_roce(ebitda, total_assets, current_liab=0):
     capital_employed = (total_assets or 0) - (current_liab or 0)
