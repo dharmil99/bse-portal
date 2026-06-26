@@ -34,7 +34,7 @@ FILE_MAP = {
     "TechMahindra":     "Tech Mahindra Limited",
     "Wipro":            "Wipro Limited",
     "Hero Motocorp":        "Hero MotoCorp Limited",
-    "TVS Motor Co":         "TVS Motor Company",
+    "TVS Motor Co":         "TVS Motor Company Limited",
     "Eicher Motors":        "Eicher Motors Limited",
     "Ashok Leyland":        "Ashok Leyland Limited",
     "Bosch":                "Bosch Limited",
@@ -42,13 +42,57 @@ FILE_MAP = {
     "Apollo Tyres":         "Apollo Tyres Limited",
     "CEAT":                 "CEAT Limited",
     "Balkrishna Inds":      "Balkrishna Industries",
-    "Samvardh. Mothe":      "Samvardhana Motherson",
-    "Minda Corp":           "Minda Industries Limited",
-    "Sona BLW Precis":      "Sona BLW Precision",
-    "Endurance Tech":       "Endurance Technologies",
+    "Samvardh. Mothe":      "Samvardhana Motherson International Limited",
+    "Minda Corp":           "Minda Corporation Limited",
+    "Sona BLW Precis":      "Sona BLW Precision Forgings Limited",
+    "Endurance Tech":       "Endurance Technologies Limited",
     "Escorts Kubota":       "Escorts Kubota Limited",
     "Force Motors":         "Force Motors Limited",
     "Atul Auto":            "Atul Auto Limited",
+    # Banking (incl. NBFC / Insurance)
+    "AxisBank":           "Axis Bank Limited",
+    "BajajFinance":       "Bajaj Finance Limited",
+    "BajajFinserv":       "Bajaj Finserv Limited",
+    "ShriramFinance":     "Shriram Finance Limited",
+    "HDFCLife":           "HDFC Life Insurance Company Limited",
+    "SBILife":            "SBI Life Insurance Company Limited",
+    "Jio Financial":      "Jio Financial Services Limited",
+ 
+    # FMCG
+    "Trent":              "Trent Limited",
+    "Titan Company":      "Titan Company Limited",
+    "TataConsumer":       "Tata Consumer Products Limited",
+ 
+    # Pharmaceuticals (incl. hospital chains)
+    "ApolloHospitals":    "Apollo Hospitals Enterprise Limited",
+    "MaxHealthcare":      "Max Healthcare Institute Limited",
+ 
+    # Energy
+    "Coal India":         "Coal India Limited",
+    "O N G C":            "Oil and Natural Gas Corporation Limited",
+    "NTPC":               "NTPC Limited",
+    "Power Grid Corpn":   "Power Grid Corporation of India Limited",
+    "Reliance Industries":"Reliance Industries Limited",
+ 
+    # Telecom
+    "Bharti Airtel":      "Bharti Airtel Limited",
+    "Indus Towers":       "Indus Towers Limited",
+ 
+    # Metals & Mining
+    "Adani Enterp":       "Adani Enterprises Limited",
+    "JSW Steel":          "JSW Steel Limited",
+    "Tata Steel":         "Tata Steel Limited",
+    "Hindalco Inds":      "Hindalco Industries Limited",
+ 
+    # Cement
+    "UltraTech Cem":      "UltraTech Cement Limited",
+    "Grasim Inds":        "Grasim Industries Limited",
+ 
+    # Consumer
+    "Eternal":            "Eternal Limited",
+ 
+    # Infrastructure
+    "Larsen & Toubro":    "Larsen & Toubro Limited",
 }
 
 def excel_date_to_year(val):

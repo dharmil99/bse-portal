@@ -34,8 +34,6 @@ def get_benchmark_data(sector_name):
                 AND b.quarter = r.quarter
             WHERE s.sector_name = :sector
               AND r.quarter = 'Q4FY25'
-              AND r.revenue_growth IS NOT NULL
-              AND r.roce IS NOT NULL
         """), {"sector": sector_name})
         return pd.DataFrame(result.fetchall(), columns=[
             'company_name', 'market_cap', 'sector_name',
@@ -46,14 +44,14 @@ def get_benchmark_data(sector_name):
 @st.cache_data
 def get_sectors():
     with engine.connect() as conn:
-        result = conn.execute(text("SELECT sector_name FROM sectors ORDER BY sector_name"))
+        result = conn.execute(text("SELECT DISTINCT sector_name FROM sectors ORDER BY sector_name"))
         return [row[0] for row in result.fetchall()]
 
 # ── Controls ──────────────────────────────────────────
 col1, col2 = st.columns([2, 2])
 sectors = get_sectors()
 selected_sector = col1.selectbox("Select Sector", sectors)
-selected_company = col2.selectbox("Highlight Company (optional)", 
+selected_company = col2.selectbox("Highlight Company (optional)",
                                    ["None"] + get_benchmark_data(selected_sector)['company_name'].tolist())
 
 df = get_benchmark_data(selected_sector)
@@ -65,12 +63,21 @@ else:
     for col in ['market_cap', 'roce', 'revenue_growth', 'net_margin', 'total_score']:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
-    df = df.dropna(subset=['roce', 'revenue_growth'])
+    # Fill NaN values so chart doesn't break
+    df['market_cap']     = df['market_cap'].fillna(10000)
+    df['total_score']    = df['total_score'].fillna(25)
+    df['net_margin']     = df['net_margin'].fillna(0)
+    df['roce']           = df['roce'].fillna(0)
+    df['revenue_growth'] = df['revenue_growth'].fillna(0)
+
+    # Drop rows where both roce and revenue_growth are 0 (no meaningful data)
+    df = df[~((df['roce'] == 0) & (df['revenue_growth'] == 0))]
+
+    if df.empty:
+        st.warning("No data available for this sector.")
+        st.stop()
 
     # Highlight selected company
-    df['highlight'] = df['company_name'].apply(
-        lambda x: '⭐ ' + x if x == selected_company else x
-    )
     df['color'] = df['company_name'].apply(
         lambda x: 'Selected' if x == selected_company else 'Peer'
     )
@@ -146,8 +153,8 @@ else:
     # ── Data table ────────────────────────────────────
     st.markdown("---")
     st.subheader("📋 Sector Data Table")
-    display = df[['company_name','revenue_growth','roce',
-                  'net_margin','total_score']].copy()
-    display.columns = ['Company','Rev Growth%','ROCE%','Net Margin%','Score/100']
+    display = df[['company_name', 'revenue_growth', 'roce',
+                  'net_margin', 'total_score']].copy()
+    display.columns = ['Company', 'Rev Growth%', 'ROCE%', 'Net Margin%', 'Score/100']
     display = display.sort_values('Score/100', ascending=False)
     st.dataframe(display.set_index('Company'), use_container_width=True)

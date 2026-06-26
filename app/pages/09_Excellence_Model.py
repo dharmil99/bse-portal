@@ -8,164 +8,38 @@ from scripts.db_connect import get_engine
 
 st.set_page_config(page_title="Excellence Model", page_icon="🏆", layout="wide")
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* Page background */
 [data-testid="stAppViewContainer"] { background: #0D1117; }
 [data-testid="stSidebar"] { background: #161B22; }
-
-/* Hide default streamlit header */
 header[data-testid="stHeader"] { background: transparent; }
-
-/* Main title */
-.em-title {
-    font-family: 'Arial', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #E6EDF3;
-    letter-spacing: -0.5px;
-    margin-bottom: 0;
-}
-.em-subtitle {
-    font-size: 0.95rem;
-    color: #8B949E;
-    margin-top: 4px;
-    margin-bottom: 28px;
-}
-
-/* Score card */
-.score-card {
-    background: #161B22;
-    border: 1px solid #30363D;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 10px;
-    position: relative;
-    transition: border-color 0.2s;
-}
+.em-title { font-family: Arial; font-size: 2rem; font-weight: 700; color: #E6EDF3; margin-bottom: 0; }
+.em-subtitle { font-size: 0.95rem; color: #8B949E; margin-top: 4px; margin-bottom: 28px; }
+.score-card { background: #161B22; border: 1px solid #30363D; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
 .score-card:hover { border-color: #58A6FF; }
-.rank-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #8B949E;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.company-name {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #E6EDF3;
-    margin: 3px 0;
-}
-.score-num {
-    font-size: 1.6rem;
-    font-weight: 700;
-    font-family: monospace;
-}
-.tier-pill {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    margin-top: 4px;
-}
-
-/* Progress bar container */
-.prog-wrap {
-    background: #21262D;
-    border-radius: 4px;
-    height: 6px;
-    margin-top: 10px;
-    overflow: hidden;
-}
-.prog-fill {
-    height: 6px;
-    border-radius: 4px;
-    transition: width 0.4s ease;
-}
-
-/* Category mini-scores */
-.cat-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-.cat-chip {
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid #30363D;
-    color: #8B949E;
-}
-
-/* Heatmap cell */
-.hm-cell-green  { background: #1A3E2A; color: #56D364; border-radius: 4px; padding: 4px 6px; text-align: center; font-size: 0.75rem; font-weight: 600; }
-.hm-cell-yellow { background: #3D2F00; color: #E3B341; border-radius: 4px; padding: 4px 6px; text-align: center; font-size: 0.75rem; font-weight: 600; }
-.hm-cell-red    { background: #3D1515; color: #F85149; border-radius: 4px; padding: 4px 6px; text-align: center; font-size: 0.75rem; font-weight: 600; }
-.hm-cell-gray   { background: #21262D; color: #8B949E; border-radius: 4px; padding: 4px 6px; text-align: center; font-size: 0.75rem; }
-
-/* Section header */
-.section-hdr {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #58A6FF;
-    margin: 28px 0 14px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #21262D;
-}
-
-/* Metric legend */
-.legend-box {
-    background: #161B22;
-    border: 1px solid #30363D;
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-size: 0.8rem;
-    color: #8B949E;
-    margin-bottom: 16px;
-}
-.legend-box b { color: #E6EDF3; }
+.rank-badge { font-size: 0.72rem; font-weight: 700; color: #8B949E; text-transform: uppercase; letter-spacing: 1px; }
+.company-name { font-size: 1.05rem; font-weight: 600; color: #E6EDF3; margin: 3px 0; }
+.score-num { font-size: 1.6rem; font-weight: 700; font-family: monospace; }
+.tier-pill { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-top: 4px; }
+.prog-wrap { background: #21262D; border-radius: 4px; height: 6px; margin-top: 10px; overflow: hidden; }
+.prog-fill { height: 6px; border-radius: 4px; }
+.cat-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.cat-chip { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; border: 1px solid #30363D; color: #8B949E; }
+.section-hdr { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #58A6FF; margin: 28px 0 14px; padding-bottom: 6px; border-bottom: 1px solid #21262D; }
+.sector-hdr { background: #161B22; border: 1px solid #30363D; border-radius: 8px; padding: 10px 16px; margin: 20px 0 10px; font-size: 1rem; font-weight: 700; color: #E6EDF3; }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-AUTO_COMPANIES = [
-    "Tata Motors Limited", "Maruti Suzuki India", "Mahindra and Mahindra",
-    "Bajaj Auto Limited", "Hero MotoCorp Limited", "TVS Motor Company",
-    "Eicher Motors Limited", "Ashok Leyland Limited", "Bosch Limited",
-    "MRF Limited", "Apollo Tyres Limited", "CEAT Limited",
-    "Balkrishna Industries", "Samvardhana Motherson", "Minda Industries Limited",
-    "Sona BLW Precision", "Endurance Technologies", "Escorts Kubota Limited",
-    "Force Motors Limited", "Atul Auto Limited"
-]
-
 RATIO_WEIGHTS = {
-    # Profitability = 35%
-    "Net Profit Margin":       0.10,
-    "EBITDA Margin":           0.10,
-    "ROE":                     0.08,
-    "ROCE":                    0.05,
-    "Operating Profit Margin": 0.02,
-    # Growth = 25%
-    "Revenue Growth YoY":      0.10,
-    "3Y Revenue CAGR":         0.08,
-    "NP Growth YoY":           0.05,
-    "EPS Growth YoY":          0.02,
-    # Efficiency = 20%
-    "Asset Turnover":          0.07,
-    "Debtor Days":             0.05,
-    "Inventory Turnover":      0.08,
-    # Safety = 20%
-    "Debt to Equity":          0.08,
-    "Interest Coverage":       0.07,
-    "Current Ratio":           0.05,
+    "Net Profit Margin": 0.10, "EBITDA Margin": 0.10,
+    "ROE": 0.08, "ROCE": 0.07, "Operating Profit Margin": 0.05,
+    "Revenue Growth YoY": 0.10, "3Y Revenue CAGR": 0.08,
+    "NP Growth YoY": 0.07, "Asset Turnover": 0.07,
+    "Debtor Days": 0.05, "Inventory Turnover": 0.08,
+    "Debt to Equity": 0.08, "Interest Coverage": 0.07,
+    "EPS Growth YoY": 0.05, "Current Ratio": 0.05,
 }
-
 HIGHER_BETTER = {
     "Net Profit Margin": True, "EBITDA Margin": True, "ROE": True,
     "ROCE": True, "Operating Profit Margin": True, "Revenue Growth YoY": True,
@@ -173,19 +47,11 @@ HIGHER_BETTER = {
     "Debtor Days": False, "Inventory Turnover": True, "Debt to Equity": False,
     "Interest Coverage": True, "EPS Growth YoY": True, "Current Ratio": True,
 }
-
 CATEGORIES = {
     "Profitability": ["Net Profit Margin", "EBITDA Margin", "ROE", "ROCE", "Operating Profit Margin"],
     "Growth":        ["Revenue Growth YoY", "3Y Revenue CAGR", "NP Growth YoY", "EPS Growth YoY"],
     "Efficiency":    ["Asset Turnover", "Debtor Days", "Inventory Turnover"],
     "Safety":        ["Debt to Equity", "Interest Coverage", "Current Ratio"],
-}
-
-CAT_COLORS = {
-    "Profitability": "#1F6FEB",
-    "Growth":        "#3FB950",
-    "Efficiency":    "#A371F7",
-    "Safety":        "#F0883E",
 }
 
 def tier_info(score):
@@ -201,36 +67,40 @@ def score_color(score):
     elif score >= 50: return "#E3B341"
     else: return "#F85149"
 
-# ── Data loading ──────────────────────────────────────────────────────────────
+def safe_div(a, b, mult=1):
+    try:
+        if b and float(b) != 0:
+            return round(float(a) / float(b) * mult, 2)
+    except: pass
+    return None
+
+# ── Load all companies from DB ────────────────────────────────────────────────
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_all_data():
     engine = get_engine()
 
-    def safe_div(a, b, mult=1):
-        try:
-            if b and float(b) != 0:
-                return round(float(a) / float(b) * mult, 2)
-        except:
-            pass
-        return None
+    # Get all companies with their sectors
+    with engine.connect() as conn:
+        companies_df = pd.read_sql(text("""
+            SELECT c.company_id, c.company_name, s.sector_name
+            FROM companies c
+            JOIN sectors s ON c.sector_id = s.sector_id
+            ORDER BY s.sector_name, c.company_name
+        """), conn)
+
+    all_companies = companies_df['company_name'].tolist()
+    sector_map = dict(zip(companies_df['company_name'], companies_df['sector_name']))
 
     all_ratios = {}
-    for company in AUTO_COMPANIES:
+    for _, row in companies_df.iterrows():
+        company = row['company_name']
+        cid = row['company_id']
         try:
             with engine.connect() as conn:
-                result = conn.execute(text(
-                    "SELECT company_id FROM companies WHERE company_name = :name"
-                ), {"name": company}).fetchone()
-                if not result:
-                    all_ratios[company] = {}
-                    continue
-                cid = result[0]
-
                 pl = pd.read_sql(text("""
                     SELECT fiscal_year, sales, net_profit, depreciation, interest
                     FROM profit_loss WHERE company_id = :cid ORDER BY fiscal_year
                 """), conn, params={"cid": cid})
-
                 bs = pd.read_sql(text("""
                     SELECT fiscal_year, equity_capital, reserves, borrowings,
                            total_assets, net_block, receivables, inventory,
@@ -252,10 +122,10 @@ def load_all_data():
             old3   = merged.iloc[-4] if len(merged) > 3 else merged.iloc[0]
 
             r = {}
-            ebitda = (latest["net_profit"] or 0) + (latest["interest"] or 0) + (latest["depreciation"] or 0)
-            equity = (latest.get("equity_capital") or 0) + (latest.get("reserves") or 0)
-            cap_emp = equity + (latest.get("borrowings") or 0)
-            ebit   = (latest["net_profit"] or 0) + (latest["interest"] or 0)
+            ebitda   = (latest["net_profit"] or 0) + (latest["interest"] or 0) + (latest["depreciation"] or 0)
+            equity   = (latest.get("equity_capital") or 0) + (latest.get("reserves") or 0)
+            cap_emp  = equity + (latest.get("borrowings") or 0)
+            ebit     = (latest["net_profit"] or 0) + (latest["interest"] or 0)
 
             r["Net Profit Margin"]       = safe_div(latest["net_profit"], latest["sales"], 100)
             r["EBITDA Margin"]           = safe_div(ebitda, latest["sales"], 100)
@@ -263,23 +133,16 @@ def load_all_data():
             r["ROCE"]                    = safe_div(ebit, cap_emp, 100)
             r["Operating Profit Margin"] = safe_div(ebitda, latest["sales"], 100)
             r["Revenue Growth YoY"]      = safe_div(latest["sales"] - prev["sales"], prev["sales"], 100)
-
             try:
                 if old3["sales"] and float(old3["sales"]) != 0:
                     r["3Y Revenue CAGR"] = round(((float(latest["sales"]) / float(old3["sales"])) ** (1/3) - 1) * 100, 2)
-                else:
-                    r["3Y Revenue CAGR"] = None
-            except:
-                r["3Y Revenue CAGR"] = None
-
+                else: r["3Y Revenue CAGR"] = None
+            except: r["3Y Revenue CAGR"] = None
             try:
                 prev_np = float(prev["net_profit"]); curr_np = float(latest["net_profit"])
                 r["NP Growth YoY"] = round((curr_np - prev_np) / abs(prev_np) * 100, 2) if prev_np != 0 else None
-            except:
-                r["NP Growth YoY"] = None
-
+            except: r["NP Growth YoY"] = None
             r["EPS Growth YoY"] = r["NP Growth YoY"]
-
             total_assets = float(latest.get("total_assets") or 0)
             if total_assets == 0:
                 total_assets = sum(float(latest.get(k) or 0) for k in ["net_block","receivables","inventory","cash_and_bank"])
@@ -287,320 +150,209 @@ def load_all_data():
             r["Debtor Days"]        = safe_div(latest.get("receivables") or 0, latest["sales"], 365)
             r["Inventory Turnover"] = safe_div(latest["sales"], latest.get("inventory")) if latest.get("inventory") else None
             r["Debt to Equity"]     = safe_div(latest.get("borrowings"), equity)
-
             interest = float(latest.get("interest") or 0)
             r["Interest Coverage"]  = safe_div(ebit, interest) if interest > 0 else None
-
             curr_assets = sum(float(latest.get(k) or 0) for k in ["receivables","inventory","cash_and_bank"])
             curr_liab   = float(latest.get("other_liabilities") or 0)
-            r["Current Ratio"] = safe_div(curr_assets, curr_liab) if curr_liab > 0 else None
-
+            r["Current Ratio"]      = safe_div(curr_assets, curr_liab) if curr_liab > 0 else None
             all_ratios[company] = r
-
         except Exception as e:
             all_ratios[company] = {}
 
-    # Percentile scores
-    ratio_names = list(RATIO_WEIGHTS.keys())
-    pct_scores = {}
-    for company in AUTO_COMPANIES:
-        pct_scores[company] = {}
+    # Build sector groups
+    sectors = {}
+    for company in all_companies:
+        sec = sector_map.get(company, "Unknown")
+        sectors.setdefault(sec, []).append(company)
 
+    # Calculate percentile scores PER SECTOR
+    ratio_names = list(RATIO_WEIGHTS.keys())
+    pct_scores  = {c: {} for c in all_companies}
+    total_scores = {}
+    cat_scores   = {}
+
+    for sec, companies in sectors.items():
+        if len(companies) < 2:
+            for c in companies:
+                for rn in ratio_names: pct_scores[c][rn] = 50
+                total_scores[c] = 50.0
+                cat_scores[c]   = {cat: 50.0 for cat in CATEGORIES}
+            continue
+
+        for rn in ratio_names:
+            vals = [all_ratios[c].get(rn) for c in companies]
+            valid = [v for v in vals if v is not None]
+            for c in companies:
+                val = all_ratios[c].get(rn)
+                if val is None or not valid:
+                    pct_scores[c][rn] = 50
+                else:
+                    if HIGHER_BETTER[rn]:
+                        pct_scores[c][rn] = round(sum(1 for v in valid if v <= val) / len(valid) * 100, 1)
+                    else:
+                        pct_scores[c][rn] = round(sum(1 for v in valid if v >= val) / len(valid) * 100, 1)
+
+        for c in companies:
+            total_scores[c] = round(sum(pct_scores[c].get(r, 50) * w for r, w in RATIO_WEIGHTS.items()), 1)
+            cat_scores[c]   = {}
+            for cat, ratios in CATEGORIES.items():
+                vals = [pct_scores[c].get(r, 50) for r in ratios]
+                cat_scores[c][cat] = round(sum(vals) / len(vals), 1)
+
+    # Also compute OVERALL cross-sector rankings
+    overall_pct = {c: {} for c in all_companies}
     for rn in ratio_names:
-        all_vals = [all_ratios[c].get(rn) for c in AUTO_COMPANIES]
-        valid = [v for v in all_vals if v is not None]
-        for company in AUTO_COMPANIES:
-            val = all_ratios[company].get(rn)
+        vals  = [all_ratios[c].get(rn) for c in all_companies]
+        valid = [v for v in vals if v is not None]
+        for c in all_companies:
+            val = all_ratios[c].get(rn)
             if val is None or not valid:
-                pct_scores[company][rn] = 50
+                overall_pct[c][rn] = 50
             else:
                 if HIGHER_BETTER[rn]:
-                    pct_scores[company][rn] = round(sum(1 for v in valid if v <= val) / len(valid) * 100, 1)
+                    overall_pct[c][rn] = round(sum(1 for v in valid if v <= val) / len(valid) * 100, 1)
                 else:
-                    pct_scores[company][rn] = round(sum(1 for v in valid if v >= val) / len(valid) * 100, 1)
+                    overall_pct[c][rn] = round(sum(1 for v in valid if v >= val) / len(valid) * 100, 1)
 
-    # Total scores
-    total_scores = {}
-    for company in AUTO_COMPANIES:
-        total_scores[company] = round(sum(
-            pct_scores[company].get(r, 50) * w for r, w in RATIO_WEIGHTS.items()
-        ), 1)
+    overall_scores = {c: round(sum(overall_pct[c].get(r, 50) * w for r, w in RATIO_WEIGHTS.items()), 1) for c in all_companies}
+    overall_ranked = sorted(overall_scores.items(), key=lambda x: x[1], reverse=True)
 
-    ranked = sorted(total_scores.items(), key=lambda x: x[1], reverse=True)
+    return all_companies, sector_map, sectors, all_ratios, pct_scores, total_scores, cat_scores, overall_ranked, overall_scores
 
-    # Category scores
-    cat_scores = {}
-    for company in AUTO_COMPANIES:
-        cat_scores[company] = {}
-        for cat, ratios in CATEGORIES.items():
-            vals = [pct_scores[company].get(r, 50) for r in ratios]
-            cat_scores[company][cat] = round(sum(vals) / len(vals), 1)
+# ── Load ──────────────────────────────────────────────────────────────────────
+with st.spinner("Loading excellence scores for all sectors…"):
+    all_companies, sector_map, sectors, all_ratios, pct_scores, total_scores, cat_scores, overall_ranked, overall_scores = load_all_data()
 
-    return ranked, all_ratios, pct_scores, cat_scores
-
-
-# ── Page header ───────────────────────────────────────────────────────────────
+# ── Header ────────────────────────────────────────────────────────────────────
 st.markdown('<p class="em-title">🏆 Excellence Model</p>', unsafe_allow_html=True)
-st.markdown('<p class="em-subtitle">Automobile sector · 20 companies · 15 ratios · Peer-relative scoring</p>', unsafe_allow_html=True)
+n_sectors = len([s for s, c in sectors.items() if len(c) >= 2])
+st.markdown(f'<p class="em-subtitle">All sectors · {len(all_companies)} companies · 15 ratios · Peer-relative scoring within each sector</p>', unsafe_allow_html=True)
 
-# ── Load data ─────────────────────────────────────────────────────────────────
-with st.spinner("Calculating excellence scores…"):
-    ranked, all_ratios, pct_scores, cat_scores = load_all_data()
-
-# ── Top summary metrics ───────────────────────────────────────────────────────
-top_company, top_score = ranked[0]
-avg_score = round(sum(s for _, s in ranked) / len(ranked), 1)
-leaders = sum(1 for _, s in ranked if s >= 70)
+# ── Top metrics ───────────────────────────────────────────────────────────────
+top_co, top_sc = overall_ranked[0]
+avg_sc = round(sum(overall_scores.values()) / len(overall_scores), 1)
+leaders = sum(1 for _, s in overall_ranked if s >= 70)
 
 m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.metric("Top Ranked", top_company.replace(" Limited","").replace(" India",""), f"Score: {top_score}")
-with m2:
-    st.metric("Sector Average", f"{avg_score} / 100")
-with m3:
-    st.metric("High Performers", f"{leaders} companies", "Score ≥ 70")
-with m4:
-    st.metric("Companies Ranked", "20", "Automobile sector")
+m1.metric("Overall #1", top_co.replace(" Limited","").replace(" India",""), f"Score: {top_sc}")
+m2.metric("Overall Average", f"{avg_sc} / 100")
+m3.metric("High Performers", f"{leaders} companies", "Score ≥ 70 overall")
+m4.metric("Total Companies", len(all_companies), f"{n_sectors} sectors")
 
 st.divider()
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Rankings", "🌡️ Ratio Heatmap", "🔍 Company Deep Dive", "ℹ️ Methodology"])
-
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Sector Rankings", "🌍 Overall Rankings", "🔍 Company Deep Dive", "ℹ️ Methodology"])
 
 # ════════════════════════════════════════════════════════
-# TAB 1 — RANKINGS
+# TAB 1 — SECTOR RANKINGS
 # ════════════════════════════════════════════════════════
 with tab1:
-    st.markdown('<div class="section-hdr">Excellence Rankings — All Companies</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hdr">Rankings within each sector</div>', unsafe_allow_html=True)
 
-    col_filter, col_sort = st.columns([2, 2])
-    with col_filter:
-        min_score = st.slider("Minimum score filter", 0, 90, 0, 5)
-    with col_sort:
-        sort_by = st.selectbox("Sort by", ["Excellence Score", "Profitability", "Growth", "Efficiency", "Safety"])
+    sector_list = sorted([s for s, c in sectors.items() if len(c) >= 2])
+    selected_sector = st.selectbox("Select sector", ["All Sectors"] + sector_list)
 
-    # Apply sort
-    if sort_by == "Excellence Score":
-        display_ranked = sorted(ranked, key=lambda x: x[1], reverse=True)
-    else:
-        display_ranked = sorted(ranked, key=lambda x: cat_scores[x[0]].get(sort_by, 0), reverse=True)
+    sectors_to_show = sector_list if selected_sector == "All Sectors" else [selected_sector]
 
-    display_ranked = [(c, s) for c, s in display_ranked if s >= min_score]
+    for sec in sectors_to_show:
+        companies_in_sec = sectors[sec]
+        ranked_sec = sorted(companies_in_sec, key=lambda c: total_scores.get(c, 0), reverse=True)
 
-    # Render cards in 2 columns
-    c1, c2 = st.columns(2)
-    for i, (company, score) in enumerate(display_ranked):
-        tier_label, tier_color, tier_bg = tier_info(score)
-        short = company.replace(" Limited","").replace(" India","")
-        actual_rank = next(j+1 for j,(c,_) in enumerate(ranked) if c == company)
+        st.markdown(f'<div class="sector-hdr">🏭 {sec} &nbsp;·&nbsp; {len(companies_in_sec)} companies</div>', unsafe_allow_html=True)
 
-        medal = {1:"🥇", 2:"🥈", 3:"🥉"}.get(actual_rank, f"#{actual_rank}")
+        c1, c2 = st.columns(2)
+        for i, company in enumerate(ranked_sec):
+            score = total_scores.get(company, 0)
+            tier_label, tier_color, tier_bg = tier_info(score)
+            short = company.replace(" Limited","").replace(" India","")
+            medal = {1:"🥇", 2:"🥈", 3:"🥉"}.get(i+1, f"#{i+1}")
 
-        cat_chips = "".join([
-            f'<span class="cat-chip">{cat[:4]}: <b style="color:#E6EDF3">{cat_scores[company][cat]:.0f}</b></span>'
-            for cat in ["Profitability","Growth","Efficiency","Safety"]
-        ])
+            cat_chips = "".join([
+                f'<span class="cat-chip">{cat[:4]}: <b style="color:#E6EDF3">{cat_scores[company][cat]:.0f}</b></span>'
+                for cat in ["Profitability","Growth","Efficiency","Safety"]
+            ])
 
-        card_html = f"""
-        <div class="score-card">
-            <div class="rank-badge">{medal} Rank {actual_rank}</div>
-            <div class="company-name">{short}</div>
-            <div style="display:flex; align-items:baseline; gap:8px; margin:6px 0">
-                <span class="score-num" style="color:{score_color(score)}">{score}</span>
-                <span class="tier-pill" style="background:{tier_bg}; color:{tier_color}">{tier_label}</span>
-            </div>
-            <div class="prog-wrap">
-                <div class="prog-fill" style="width:{score}%; background:{score_color(score)}"></div>
-            </div>
-            <div class="cat-row">{cat_chips}</div>
-        </div>
-        """
-        if i % 2 == 0:
-            c1.markdown(card_html, unsafe_allow_html=True)
-        else:
-            c2.markdown(card_html, unsafe_allow_html=True)
+            card = f"""
+            <div class="score-card">
+                <div class="rank-badge">{medal} Rank {i+1}</div>
+                <div class="company-name">{short}</div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin:6px 0">
+                    <span class="score-num" style="color:{score_color(score)}">{score}</span>
+                    <span class="tier-pill" style="background:{tier_bg};color:{tier_color}">{tier_label}</span>
+                </div>
+                <div class="prog-wrap"><div class="prog-fill" style="width:{score}%;background:{score_color(score)}"></div></div>
+                <div class="cat-row">{cat_chips}</div>
+            </div>"""
 
-    # Summary table below
-    st.markdown('<div class="section-hdr">Summary Table</div>', unsafe_allow_html=True)
-    table_rows = []
-    for i, (company, score) in enumerate(ranked):
-        tier_label, _, _ = tier_info(score)
-        table_rows.append({
-            "Rank": i+1,
-            "Company": company.replace(" Limited","").replace(" India",""),
-            "Score": score,
-            "Tier": tier_label,
-            "Profitability": cat_scores[company]["Profitability"],
-            "Growth": cat_scores[company]["Growth"],
-            "Efficiency": cat_scores[company]["Efficiency"],
-            "Safety": cat_scores[company]["Safety"],
-        })
-    df_table = pd.DataFrame(table_rows)
-    st.dataframe(
-        df_table.style.background_gradient(subset=["Score","Profitability","Growth","Efficiency","Safety"],
-                                            cmap="RdYlGn", vmin=20, vmax=90),
-        use_container_width=True, hide_index=True
-    )
-# ── Visual Category Comparison ─────────────────────────
-st.markdown('<div class="section-hdr">Category Score Breakdown — Top 5 vs Bottom 5</div>', 
-            unsafe_allow_html=True)
+            if i % 2 == 0: c1.markdown(card, unsafe_allow_html=True)
+            else:           c2.markdown(card, unsafe_allow_html=True)
 
-import plotly.graph_objects as go
+        # Sector summary table
+        with st.expander(f"📋 {sec} — Full table"):
+            rows = []
+            for i, c in enumerate(ranked_sec):
+                tl, _, _ = tier_info(total_scores.get(c, 0))
+                rows.append({
+                    "Rank": i+1, "Company": c.replace(" Limited","").replace(" India",""),
+                    "Score": total_scores.get(c, 0), "Tier": tl,
+                    "Profitability": cat_scores[c]["Profitability"],
+                    "Growth": cat_scores[c]["Growth"],
+                    "Efficiency": cat_scores[c]["Efficiency"],
+                    "Safety": cat_scores[c]["Safety"],
+                })
+            df = pd.DataFrame(rows)
+            st.dataframe(df.style.background_gradient(
+                subset=["Score","Profitability","Growth","Efficiency","Safety"],
+                cmap="RdYlGn", vmin=20, vmax=90),
+                use_container_width=True, hide_index=True)
 
-top5    = [c for c,_ in ranked[:5]]
-bottom5 = [c for c,_ in ranked[-5:]]
-compare_companies = top5 + bottom5
-
-categories = ["Profitability", "Growth", "Efficiency", "Safety"]
-colors = ["#1F6FEB", "#3FB950", "#A371F7", "#F0883E"]
-
-fig = go.Figure()
-
-for cat, color in zip(categories, colors):
-    fig.add_trace(go.Bar(
-        name=cat,
-        x=[c.replace(" Limited","").replace(" India","")
-           for c in compare_companies],
-        y=[cat_scores[c][cat] for c in compare_companies],
-        marker_color=color,
-        opacity=0.85
-    ))
-
-fig.add_vline(
-    x=4.5,
-    line_dash="dash",
-    line_color="#8B949E",
-    annotation_text="Top 5 | Bottom 5",
-    annotation_font_color="#8B949E"
-)
-
-fig.update_layout(
-    barmode="group",
-    height=420,
-    paper_bgcolor="#0D1117",
-    plot_bgcolor="#0D1117",
-    font=dict(color="#E6EDF3", size=11),
-    legend=dict(
-        orientation="h",
-        yanchor="bottom", y=1.02,
-        xanchor="right", x=1,
-        bgcolor="rgba(0,0,0,0)"
-    ),
-    xaxis=dict(gridcolor="#21262D", tickangle=-20),
-    yaxis=dict(gridcolor="#21262D", title="Percentile Score"),
-    margin=dict(t=40, b=60)
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ── Why Eicher wins — auto-generated insight ──────────
-st.markdown('<div class="section-hdr">Why the Top Company Leads</div>', 
-            unsafe_allow_html=True)
-
-top_co   = ranked[0][0]
-top_s    = ranked[0][1]
-top_short = top_co.replace(" Limited","").replace(" India","")
-sector_avg_score = round(sum(s for _,s in ranked) / len(ranked), 1)
-
-# Find their strongest and weakest category
-best_cat  = max(CATEGORIES.keys(), 
-                key=lambda c: cat_scores[top_co][c])
-worst_cat = min(CATEGORIES.keys(), 
-                key=lambda c: cat_scores[top_co][c])
-
-# Find top 3 strongest ratios
-top_ratios = sorted(
-    [(r, pct_scores[top_co][r]) for r in RATIO_WEIGHTS],
-    key=lambda x: x[1], reverse=True
-)[:3]
-
-insight_col1, insight_col2 = st.columns([1, 1])
-
-with insight_col1:
-    st.markdown(f"""
-    <div class="score-card" style="border-color:#1F6FEB">
-        <div class="rank-badge">🏆 Why {top_short} ranks #1</div>
-        <div style="margin-top:12px; color:#E6EDF3; font-size:0.9rem; line-height:1.7">
-            <b>{top_short}</b> scores <b style="color:#3FB950">{top_s}/100</b> vs 
-            sector average of <b style="color:#E3B341">{sector_avg_score}/100</b> — 
-            outperforming peers by <b style="color:#3FB950">
-            +{round(top_s - sector_avg_score, 1)} points</b>.<br><br>
-            Strongest pillar: <b style="color:#1F6FEB">{best_cat} 
-            ({cat_scores[top_co][best_cat]:.0f}/100)</b><br>
-            Area to watch: <b style="color:#F0883E">{worst_cat} 
-            ({cat_scores[top_co][worst_cat]:.0f}/100)</b>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with insight_col2:
-    st.markdown(f"""
-    <div class="score-card" style="border-color:#3FB950">
-        <div class="rank-badge">📊 Top 3 Strongest Ratios</div>
-        <div style="margin-top:12px">
-    """, unsafe_allow_html=True)
-
-    for ratio_name, pct in top_ratios:
-        actual_val = all_ratios[top_co].get(ratio_name)
-        val_str = f"{actual_val:.1f}" if actual_val is not None else "N/A"
-        st.markdown(f"""
-        <div style="display:flex; justify-content:space-between; 
-                    align-items:center; padding:6px 0; 
-                    border-bottom:1px solid #21262D">
-            <span style="color:#E6EDF3; font-size:0.85rem">
-                {ratio_name}
-            </span>
-            <span style="color:#3FB950; font-weight:700; font-size:0.9rem">
-                {pct:.0f}th pct &nbsp;
-                <span style="color:#8B949E; font-weight:400">
-                    ({val_str})
-                </span>
-            </span>
-        </div>
-        """, unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════
-# TAB 2 — RATIO HEATMAP
+# TAB 2 — OVERALL CROSS-SECTOR RANKINGS
 # ════════════════════════════════════════════════════════
 with tab2:
-    st.markdown('<div class="section-hdr">Ratio Heatmap — Percentile Scores per Company</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hdr">Overall rankings — all 42 companies, cross-sector comparison</div>', unsafe_allow_html=True)
+    st.info("ℹ️ These scores rank all companies against each other regardless of sector. Sector rankings (Tab 1) are more fair for peer comparison.", icon="ℹ️")
 
-    st.markdown("""
-    <div class="legend-box">
-        <b>How to read this:</b> Each cell shows the company's <b>percentile score</b> for that ratio against all 20 peers.
-        &nbsp; <span style="color:#56D364">■ Green ≥ 75</span> &nbsp;
-        <span style="color:#E3B341">■ Yellow 50–74</span> &nbsp;
-        <span style="color:#F85149">■ Red &lt; 50</span>
-    </div>
-    """, unsafe_allow_html=True)
+    min_score = st.slider("Minimum score", 0, 90, 0, 5, key="overall_slider")
+    filtered = [(c, s) for c, s in overall_ranked if s >= min_score]
 
-    cat_filter = st.multiselect("Filter categories", list(CATEGORIES.keys()), default=list(CATEGORIES.keys()))
+    c1, c2 = st.columns(2)
+    for i, (company, score) in enumerate(filtered):
+        tier_label, tier_color, tier_bg = tier_info(score)
+        short = company.replace(" Limited","").replace(" India","")
+        sec   = sector_map.get(company, "")
+        medal = {1:"🥇", 2:"🥈", 3:"🥉"}.get(i+1, f"#{i+1}")
 
-    selected_ratios = []
-    for cat in cat_filter:
-        selected_ratios.extend(CATEGORIES[cat])
+        card = f"""
+        <div class="score-card">
+            <div class="rank-badge">{medal} Rank {i+1} &nbsp;·&nbsp; {sec}</div>
+            <div class="company-name">{short}</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin:6px 0">
+                <span class="score-num" style="color:{score_color(score)}">{score}</span>
+                <span class="tier-pill" style="background:{tier_bg};color:{tier_color}">{tier_label}</span>
+            </div>
+            <div class="prog-wrap"><div class="prog-fill" style="width:{score}%;background:{score_color(score)}"></div></div>
+        </div>"""
+        if i % 2 == 0: c1.markdown(card, unsafe_allow_html=True)
+        else:           c2.markdown(card, unsafe_allow_html=True)
 
-    if selected_ratios:
-        heatmap_data = {}
-        for company, score in ranked:
-            short = company.replace(" Limited","").replace(" India","")
-            heatmap_data[short] = {r: pct_scores[company].get(r, 50) for r in selected_ratios}
-
-        df_hm = pd.DataFrame(heatmap_data).T
-        df_hm.index.name = "Company"
-
-        # Style: color cells by value
-        def color_cell(val):
-            if val >= 75:   return "background-color: #1A3E2A; color: #56D364; font-weight: 600"
-            elif val >= 50: return "background-color: #3D2F00; color: #E3B341; font-weight: 600"
-            else:           return "background-color: #3D1515; color: #F85149; font-weight: 600"
-
-        try:
-            styled = df_hm.style.map(color_cell).format("{:.0f}")
-        except AttributeError:
-            styled = df_hm.style.applymap(color_cell).format("{:.0f}")
-        st.dataframe(styled, use_container_width=True, height=600)
+    # Full table
+    st.markdown('<div class="section-hdr">Summary Table</div>', unsafe_allow_html=True)
+    table_rows = []
+    for i, (c, s) in enumerate(overall_ranked):
+        tl, _, _ = tier_info(s)
+        table_rows.append({
+            "Rank": i+1,
+            "Company": c.replace(" Limited","").replace(" India",""),
+            "Sector": sector_map.get(c,""),
+            "Overall Score": s,
+            "Tier": tl,
+        })
+    st.dataframe(
+        pd.DataFrame(table_rows).style.background_gradient(subset=["Overall Score"], cmap="RdYlGn", vmin=20, vmax=90),
+        use_container_width=True, hide_index=True)
 
 
 # ════════════════════════════════════════════════════════
@@ -609,173 +361,156 @@ with tab2:
 with tab3:
     st.markdown('<div class="section-hdr">Company Deep Dive</div>', unsafe_allow_html=True)
 
-    company_options = [c.replace(" Limited","").replace(" India","") for c, _ in ranked]
-    full_names = {c.replace(" Limited","").replace(" India",""): c for c, _ in ranked}
+    # Group by sector for selectbox
+    company_options = []
+    for sec in sorted(sectors.keys()):
+        for c in sorted(sectors[sec]):
+            company_options.append(c)
 
-    selected_short = st.selectbox("Select company", company_options)
-    selected_company = full_names[selected_short]
-    selected_score = dict(ranked)[selected_company]
-    selected_rank = next(i+1 for i,(c,_) in enumerate(ranked) if c == selected_company)
+    short_to_full = {c.replace(" Limited","").replace(" India",""): c for c in all_companies}
+    display_options = [c.replace(" Limited","").replace(" India","") for c in company_options]
 
-    tier_label, tier_color_val, tier_bg_val = tier_info(selected_score)
+    selected_short = st.selectbox("Select company", display_options)
+    selected_company = short_to_full.get(selected_short, selected_short)
+    selected_sector  = sector_map.get(selected_company, "")
+    sector_score     = total_scores.get(selected_company, 0)
+    overall_score    = overall_scores.get(selected_company, 0)
 
-    # Header
+    # Rank within sector
+    sec_companies = sectors.get(selected_sector, [])
+    sec_ranked    = sorted(sec_companies, key=lambda c: total_scores.get(c, 0), reverse=True)
+    sec_rank      = next((i+1 for i, c in enumerate(sec_ranked) if c == selected_company), "-")
+    overall_rank  = next((i+1 for i, (c,_) in enumerate(overall_ranked) if c == selected_company), "-")
+
+    tier_label, tier_color_val, tier_bg_val = tier_info(sector_score)
+
     st.markdown(f"""
     <div class="score-card" style="border-color:{tier_color_val}; margin-bottom:20px">
-        <div class="rank-badge">Rank #{selected_rank} of 20</div>
+        <div class="rank-badge">#{sec_rank} in {selected_sector} &nbsp;·&nbsp; #{overall_rank} Overall</div>
         <div class="company-name" style="font-size:1.4rem">{selected_short}</div>
-        <div style="display:flex; align-items:baseline; gap:12px; margin:8px 0">
-            <span class="score-num" style="color:{tier_color_val}; font-size:2.2rem">{selected_score}</span>
-            <span class="tier-pill" style="background:{tier_bg_val}; color:{tier_color_val}; font-size:0.85rem; padding:5px 14px">{tier_label}</span>
+        <div style="display:flex;align-items:baseline;gap:16px;margin:8px 0;flex-wrap:wrap">
+            <div>
+                <div style="font-size:0.7rem;color:#8B949E">SECTOR SCORE</div>
+                <span class="score-num" style="color:{tier_color_val};font-size:2rem">{sector_score}</span>
+            </div>
+            <div>
+                <div style="font-size:0.7rem;color:#8B949E">OVERALL SCORE</div>
+                <span class="score-num" style="color:{score_color(overall_score)};font-size:2rem">{overall_score}</span>
+            </div>
+            <span class="tier-pill" style="background:{tier_bg_val};color:{tier_color_val};font-size:0.85rem;padding:5px 14px">{tier_label}</span>
         </div>
         <div class="prog-wrap" style="height:8px">
-            <div class="prog-fill" style="width:{selected_score}%; background:{tier_color_val}"></div>
+            <div class="prog-fill" style="width:{sector_score}%;background:{tier_color_val}"></div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     # Category scores
-    st.markdown("**Category Breakdown**")
+    st.markdown("**Category Breakdown (within sector)**")
     cat_cols = st.columns(4)
-    for i, (cat, ratios) in enumerate(CATEGORIES.items()):
-        cat_s = cat_scores[selected_company][cat]
-        cat_cols[i].metric(cat, f"{cat_s:.0f} / 100",
-                           delta="Strong" if cat_s >= 65 else ("Average" if cat_s >= 45 else "Weak"),
-                           delta_color="normal" if cat_s >= 65 else ("off" if cat_s >= 45 else "inverse"))
+    for i, cat in enumerate(["Profitability","Growth","Efficiency","Safety"]):
+        cs = cat_scores[selected_company][cat]
+        delta = "Strong" if cs >= 65 else ("Average" if cs >= 45 else "Weak")
+        cat_cols[i].metric(cat, f"{cs:.0f} / 100", delta=delta,
+                           delta_color="normal" if cs >= 65 else ("off" if cs >= 45 else "inverse"))
 
     st.divider()
 
-    # Ratio breakdown table
-    st.markdown("**All 15 Ratios — Value vs Percentile**")
-
+    # Ratio table
+    st.markdown("**All 15 Ratios — Value vs Sector Percentile**")
     ratio_rows = []
     for cat, ratios in CATEGORIES.items():
         for rn in ratios:
             val = all_ratios[selected_company].get(rn)
             pct = pct_scores[selected_company].get(rn, 50)
-            wt  = RATIO_WEIGHTS[rn]
-
-            if pct >= 75:   status = "🟢 Strong"
-            elif pct >= 50: status = "🟡 Average"
-            else:           status = "🔴 Weak"
-
+            status = "🟢 Strong" if pct >= 75 else ("🟡 Average" if pct >= 50 else "🔴 Weak")
             ratio_rows.append({
-                "Category": cat,
-                "Ratio": rn,
-                "Value": round(val, 2) if val is not None else "N/A",
-                "Percentile": pct,
-                "Weight": f"{int(wt*100)}%",
+                "Category": cat, "Ratio": rn,
+                "Value": round(float(val), 2) if val is not None else "N/A",
+                "Sector Percentile": pct, "Weight": f"{int(RATIO_WEIGHTS[rn]*100)}%",
                 "Status": status,
             })
-
-    df_ratios = pd.DataFrame(ratio_rows)
-    st.dataframe(
-        df_ratios.style.background_gradient(subset=["Percentile"], cmap="RdYlGn", vmin=10, vmax=90),
-        use_container_width=True, hide_index=True
-    )
+    df_r = pd.DataFrame(ratio_rows)
+    st.dataframe(df_r.style.background_gradient(subset=["Sector Percentile"], cmap="RdYlGn", vmin=10, vmax=90),
+                 use_container_width=True, hide_index=True)
 
     # Strengths & weaknesses
-    sorted_ratios = sorted(ratio_rows, key=lambda x: x["Percentile"] if isinstance(x["Percentile"], (int,float)) else 50)
-    strengths = [r for r in sorted_ratios if isinstance(r["Percentile"], (int,float)) and r["Percentile"] >= 70][-3:]
-    weaknesses = [r for r in sorted_ratios if isinstance(r["Percentile"], (int,float)) and r["Percentile"] < 50][:3]
+    sorted_r = sorted(ratio_rows, key=lambda x: x["Sector Percentile"] if isinstance(x["Sector Percentile"], (int,float)) else 50)
+    strengths  = [r for r in sorted_r if isinstance(r["Sector Percentile"],(int,float)) and r["Sector Percentile"] >= 70][-3:]
+    weaknesses = [r for r in sorted_r if isinstance(r["Sector Percentile"],(int,float)) and r["Sector Percentile"] < 50][:3]
 
-    if strengths or weaknesses:
-        col_s, col_w = st.columns(2)
-        with col_s:
-            st.markdown("**Top Strengths**")
-            for r in reversed(strengths):
-                st.success(f"**{r['Ratio']}** — {r['Value']} ({r['Percentile']:.0f}th percentile)")
-        with col_w:
-            st.markdown("**Areas to Watch**")
-            for r in weaknesses:
-                st.warning(f"**{r['Ratio']}** — {r['Value']} ({r['Percentile']:.0f}th percentile)")
+    col_s, col_w = st.columns(2)
+    with col_s:
+        st.markdown("**Top Strengths**")
+        for r in reversed(strengths):
+            st.success(f"**{r['Ratio']}** — {r['Value']} ({r['Sector Percentile']:.0f}th percentile)")
+    with col_w:
+        st.markdown("**Areas to Watch**")
+        for r in weaknesses:
+            st.warning(f"**{r['Ratio']}** — {r['Value']} ({r['Sector Percentile']:.0f}th percentile)")
 
-    # vs Sector average comparison
+    # Sector peer comparison
     st.divider()
-    st.markdown("**How does this company compare to sector averages?**")
-
-    compare_rows = []
-    for rn in list(RATIO_WEIGHTS.keys()):
-        all_vals = [all_ratios[c].get(rn) for c in AUTO_COMPANIES if all_ratios[c].get(rn) is not None]
-        company_val = all_ratios[selected_company].get(rn)
-        if all_vals and company_val is not None:
-            sector_avg = round(sum(all_vals)/len(all_vals), 2)
-            diff = round(float(company_val) - sector_avg, 2)
-            compare_rows.append({
-                "Ratio": rn,
-                f"{selected_short}": round(float(company_val), 2),
-                "Sector Avg": sector_avg,
-                "Difference": diff,
-            })
-
-    if compare_rows:
-        df_compare = pd.DataFrame(compare_rows)
-        st.dataframe(
-            df_compare.style.background_gradient(subset=["Difference"], cmap="RdYlGn"),
-            use_container_width=True, hide_index=True
-        )
+    st.markdown(f"**{selected_short} vs {selected_sector} sector peers**")
+    peer_rows = []
+    for peer in sec_ranked:
+        ps = total_scores.get(peer, 0)
+        tl, tc, _ = tier_info(ps)
+        peer_rows.append({
+            "Company": peer.replace(" Limited","").replace(" India",""),
+            "Score": ps, "Tier": tl,
+            "Profitability": cat_scores[peer]["Profitability"],
+            "Growth": cat_scores[peer]["Growth"],
+            "Efficiency": cat_scores[peer]["Efficiency"],
+            "Safety": cat_scores[peer]["Safety"],
+        })
+    df_peer = pd.DataFrame(peer_rows)
+    st.dataframe(df_peer.style.background_gradient(
+        subset=["Score","Profitability","Growth","Efficiency","Safety"],
+        cmap="RdYlGn", vmin=20, vmax=90),
+        use_container_width=True, hide_index=True)
 
 
 # ════════════════════════════════════════════════════════
 # TAB 4 — METHODOLOGY
 # ════════════════════════════════════════════════════════
 with tab4:
-    st.markdown('<div class="section-hdr">How the Excellence Score Is Calculated</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hdr">How the Excellence Score is Calculated</div>', unsafe_allow_html=True)
 
     st.markdown("""
     **Step 1 — Data Collection**
-    Raw financial data is pulled from PostgreSQL for each company: P&L (sales, net profit, EBITDA, interest, depreciation)
-    and Balance Sheet (equity, borrowings, assets, receivables, inventory).
+    Raw P&L and Balance Sheet data pulled from PostgreSQL for each company (latest FY).
 
     **Step 2 — 15 Ratios Calculated**
-    Each ratio is computed from scratch from raw data (not pre-stored ratios) to ensure accuracy and consistency across companies.
+    Profitability, Growth, Efficiency and Safety ratios computed from scratch for every company.
 
-    **Step 3 — Percentile Ranking**
-    Each company is ranked against all 20 peers on each ratio. A percentile of 80 means the company outperforms 80% of its peers on that metric.
-    This approach normalises for sector differences — a tyre manufacturer and a 2-wheeler OEM have very different absolute margins,
-    but percentile scoring puts them on the same playing field.
+    **Step 3 — Percentile Ranking (within sector)**
+    Each company is ranked against its sector peers only. A score of 80 means the company beats 80% of peers in its sector on that metric.
+    This keeps comparisons fair — an IT company is only ranked against other IT companies, not against a steel manufacturer.
 
     **Step 4 — Weighted Score**
-    Each percentile score is multiplied by its category weight. The sum is the Excellence Score (0–100).
+    Each percentile score × its weight → sum = Excellence Score (0–100).
+
+    **Overall Rankings (Tab 2)** rank all companies cross-sector — useful for spotting standout performers across the market.
     """)
 
     st.divider()
-    st.markdown("**Category Weights**")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("**Ratio Weights**")
+        wt_rows = [{"Ratio": r, "Weight": f"{int(w*100)}%", "Higher is Better": "✅" if HIGHER_BETTER[r] else "❌"}
+                   for r, w in RATIO_WEIGHTS.items()]
+        st.dataframe(pd.DataFrame(wt_rows), use_container_width=True, hide_index=True)
+    with col2:
+        st.markdown("**Score Tiers**")
+        tier_data = [
+            {"Range": "85–100", "Tier": "Excellence Leader"},
+            {"Range": "70–84",  "Tier": "High Performer"},
+            {"Range": "55–69",  "Tier": "Above Average"},
+            {"Range": "40–54",  "Tier": "Average"},
+            {"Range": "25–39",  "Tier": "Below Average"},
+            {"Range": "0–24",   "Tier": "Needs Improvement"},
+        ]
+        st.dataframe(pd.DataFrame(tier_data), use_container_width=True, hide_index=True)
 
-    cat_rows = []
-    for cat, ratios in CATEGORIES.items():
-        total_w = sum(RATIO_WEIGHTS[r] for r in ratios)
-        cat_rows.append({
-            "Category": cat,
-            "Ratios": ", ".join(ratios),
-            "Total Weight": f"{int(total_w*100)}%",
-            "Rationale": {
-                "Profitability": "Core earnings quality — the most critical measure of business health",
-                "Growth":        "Revenue and profit momentum — rewards compounding businesses",
-                "Efficiency":    "Asset utilisation — companies squeezing more from their base",
-                "Safety":        "Balance sheet strength — floor for financial risk",
-            }[cat]
-        })
-    st.dataframe(pd.DataFrame(cat_rows), use_container_width=True, hide_index=True)
-
-    st.divider()
-    st.markdown("**Ratio Weights**")
-
-    wt_rows = [{"Ratio": r, "Category": cat, "Weight": f"{int(w*100)}%", "Higher is Better": "✅" if HIGHER_BETTER[r] else "❌ (lower is better)"}
-               for cat, ratios in CATEGORIES.items() for r in ratios
-               for w in [RATIO_WEIGHTS[r]]]
-    st.dataframe(pd.DataFrame(wt_rows), use_container_width=True, hide_index=True)
-
-    st.divider()
-    st.markdown("**Score Tiers**")
-    tier_data = [
-        {"Range": "85–100", "Tier": "Excellence Leader",  "Meaning": "Top-tier performance across most metrics — sector benchmark"},
-        {"Range": "70–84",  "Tier": "High Performer",     "Meaning": "Consistently strong, outperforms majority of peers"},
-        {"Range": "55–69",  "Tier": "Above Average",      "Meaning": "Solid business with identifiable strengths"},
-        {"Range": "40–54",  "Tier": "Average",            "Meaning": "Mixed performance, in line with sector middle"},
-        {"Range": "25–39",  "Tier": "Below Average",      "Meaning": "Notable weaknesses dragging overall score"},
-        {"Range": "0–24",   "Tier": "Needs Improvement",  "Meaning": "Multiple areas of concern across categories"},
-    ]
-    st.dataframe(pd.DataFrame(tier_data), use_container_width=True, hide_index=True)
-
-    st.caption("Data source: BSE/NSE filings via Screener.in · Stored in PostgreSQL · FY ending March 2025")
+    st.caption("Data: BSE/NSE filings via Screener.in · PostgreSQL · FY ending March 2025")
