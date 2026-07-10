@@ -7,44 +7,29 @@ from scripts.db_connect import get_engine
 
 app = FastAPI(title="BenchmarkIQ API", version="1.0")
 
-# Allow Next.js to call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:8080"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 engine = get_engine()
 
-# ── ENDPOINT 1: Platform stats (homepage) ─────────────
 @app.get("/api/stats")
 def get_stats():
     with engine.connect() as conn:
-        companies = conn.execute(text(
-            "SELECT COUNT(*) FROM companies"
-        )).fetchone()[0]
-
-        sectors = conn.execute(text(
-            "SELECT COUNT(*) FROM sectors"
-        )).fetchone()[0]
-
-        data_points = conn.execute(text(
-            "SELECT COUNT(*) FROM quarterly_results"
-        )).fetchone()[0]
-
-        avg_score = conn.execute(text(
-            "SELECT ROUND(AVG(total_score),1) FROM benchmark_scores"
-        )).fetchone()[0]
-
+        companies = conn.execute(text("SELECT COUNT(*) FROM companies")).fetchone()[0]
+        sectors   = conn.execute(text("SELECT COUNT(DISTINCT sector_name) FROM sectors")).fetchone()[0]
+        data_points = conn.execute(text("SELECT COUNT(*) FROM profit_loss")).fetchone()[0]
+        avg_score = conn.execute(text("SELECT ROUND(AVG(total_score),1) FROM benchmark_scores")).fetchone()[0]
     return {
-        "companies": companies,
-        "sectors": sectors,
+        "companies":   companies,
+        "sectors":     sectors,
         "data_points": data_points,
-        "avg_score": float(avg_score) if avg_score else 0
+        "avg_score":   float(avg_score) if avg_score else 0
     }
 
-# ── ENDPOINT 2: All companies list ────────────────────
 @app.get("/api/companies")
 def get_companies():
     with engine.connect() as conn:
@@ -58,26 +43,23 @@ def get_companies():
                 AND b.quarter = 'Q4FY25'
             ORDER BY c.company_name
         """)).fetchall()
-
     return [
         {
-            "id":           r[0],
-            "name":         r[1],
-            "bse_code":     r[2],
-            "nse_symbol":   r[3],
-            "market_cap":   float(r[4]) if r[4] else 0,
-            "sector":       r[5],
-            "score":        float(r[6]) if r[6] else 0,
-            "rank":         r[7]
+            "company_id":  r[0],
+            "company_name":r[1],
+            "bse_code":    r[2],
+            "nse_symbol":  r[3],
+            "market_cap":  float(r[4]) if r[4] else 0,
+            "sector_name": r[5],
+            "total_score": float(r[6]) if r[6] else 0,
+            "rank":        r[7]
         }
         for r in rows
     ]
 
-# ── ENDPOINT 3: Single company full profile ────────────
 @app.get("/api/company/{company_id}")
 def get_company(company_id: int):
     with engine.connect() as conn:
-        # Basic info
         info = conn.execute(text("""
             SELECT c.company_name, c.bse_code, c.nse_symbol,
                    c.market_cap, s.sector_name
@@ -89,7 +71,6 @@ def get_company(company_id: int):
         if not info:
             raise HTTPException(status_code=404, detail="Company not found")
 
-        # Latest ratios
         ratios = conn.execute(text("""
             SELECT roe, roce, net_margin, debt_to_equity,
                    revenue_growth, cagr_3y, cagr_5y, ebitda_margin
@@ -97,14 +78,12 @@ def get_company(company_id: int):
             WHERE company_id = :id AND quarter = 'Q4FY25'
         """), {"id": company_id}).fetchone()
 
-        # Benchmark score
         score = conn.execute(text("""
             SELECT total_score, industry_rank, industry_percentile
             FROM benchmark_scores
             WHERE company_id = :id AND quarter = 'Q4FY25'
         """), {"id": company_id}).fetchone()
 
-        # Revenue trend (last 8 quarters)
         trend = conn.execute(text("""
             SELECT quarter, revenue, net_profit, ebitda, eps
             FROM quarterly_results
@@ -112,7 +91,6 @@ def get_company(company_id: int):
             ORDER BY period_end DESC LIMIT 10
         """), {"id": company_id}).fetchall()
 
-        # P&L history
         pl = conn.execute(text("""
             SELECT fiscal_year, sales, net_profit, interest,
                    depreciation, raw_material, employee_cost, tax
@@ -121,7 +99,6 @@ def get_company(company_id: int):
             ORDER BY fiscal_year
         """), {"id": company_id}).fetchall()
 
-        # Balance sheet
         bs = conn.execute(text("""
             SELECT fiscal_year, equity_capital, reserves,
                    borrowings, total_assets, cash_and_bank,
@@ -131,7 +108,6 @@ def get_company(company_id: int):
             ORDER BY fiscal_year
         """), {"id": company_id}).fetchall()
 
-        # Cash flow
         cf = conn.execute(text("""
             SELECT fiscal_year, operating_cf,
                    investing_cf, financing_cf, net_cash_flow
@@ -167,33 +143,28 @@ def get_company(company_id: int):
         } if score else {},
         "trend": [
             {"quarter": r[0], "revenue": f(r[1]),
-             "net_profit": f(r[2]), "ebitda": f(r[3]),
-             "eps": f(r[4])}
+             "net_profit": f(r[2]), "ebitda": f(r[3]), "eps": f(r[4])}
             for r in reversed(trend)
         ],
         "pl": [
-            {"year": r[0], "sales": f(r[1]),
-             "net_profit": f(r[2]), "interest": f(r[3]),
-             "depreciation": f(r[4]), "raw_material": f(r[5]),
-             "employee_cost": f(r[6]), "tax": f(r[7])}
+            {"year": r[0], "sales": f(r[1]), "net_profit": f(r[2]),
+             "interest": f(r[3]), "depreciation": f(r[4]),
+             "raw_material": f(r[5]), "employee_cost": f(r[6]), "tax": f(r[7])}
             for r in pl
         ],
         "balance_sheet": [
-            {"year": r[0], "equity": f(r[1]),
-             "reserves": f(r[2]), "borrowings": f(r[3]),
-             "total_assets": f(r[4]), "cash": f(r[5]),
-             "receivables": f(r[6]), "inventory": f(r[7])}
+            {"year": r[0], "equity": f(r[1]), "reserves": f(r[2]),
+             "borrowings": f(r[3]), "total_assets": f(r[4]),
+             "cash": f(r[5]), "receivables": f(r[6]), "inventory": f(r[7])}
             for r in bs
         ],
         "cash_flow": [
-            {"year": r[0], "operating": f(r[1]),
-             "investing": f(r[2]), "financing": f(r[3]),
-             "net": f(r[4])}
+            {"year": r[0], "operating": f(r[1]), "investing": f(r[2]),
+             "financing": f(r[3]), "net": f(r[4])}
             for r in cf
         ]
     }
 
-# ── ENDPOINT 4: Benchmark bubble chart data ────────────
 @app.get("/api/benchmark/{sector_name}")
 def get_benchmark(sector_name: str):
     with engine.connect() as conn:
@@ -209,8 +180,6 @@ def get_benchmark(sector_name: str):
                 AND b.quarter = r.quarter
             WHERE s.sector_name = :sector
               AND r.quarter = 'Q4FY25'
-              AND r.revenue_growth IS NOT NULL
-              AND r.roce IS NOT NULL
         """), {"sector": sector_name}).fetchall()
 
     def f(v): return float(v) if v is not None else 0
@@ -231,74 +200,77 @@ def get_benchmark(sector_name: str):
         for r in rows
     ]
 
-# ── ENDPOINT 5: Sector list ────────────────────────────
 @app.get("/api/sectors")
 def get_sectors():
     with engine.connect() as conn:
         rows = conn.execute(text("""
             SELECT s.sector_name,
-                   COUNT(c.company_id) as companies,
-                   ROUND(AVG(r.roe),1) as avg_roe,
-                   ROUND(AVG(r.roce),1) as avg_roce,
-                   ROUND(AVG(r.net_margin),1) as avg_margin,
+                   COUNT(DISTINCT c.company_id) as company_count,
+                   ROUND(AVG(r.roe),1)            as avg_roe,
+                   ROUND(AVG(r.roce),1)           as avg_roce,
+                   ROUND(AVG(r.net_margin),1)     as avg_margin,
                    ROUND(AVG(r.revenue_growth),1) as avg_growth,
-                   ROUND(AVG(b.total_score),1) as avg_score
+                   ROUND(AVG(b.total_score),1)    as avg_score
             FROM sectors s
             JOIN companies c ON c.sector_id = s.sector_id
-            JOIN financial_ratios r ON r.company_id = c.company_id
+            LEFT JOIN financial_ratios r ON r.company_id = c.company_id
+                AND r.quarter = 'Q4FY25'
+            LEFT JOIN benchmark_scores b ON b.company_id = c.company_id
+                AND b.quarter = 'Q4FY25'
+            GROUP BY s.sector_name
+            ORDER BY avg_score DESC
+        """)).fetchall()
+
+    def f(v): return float(v) if v is not None else None
+
+    return [
+        {
+            "sector_name":   r[0],
+            "company_count": r[1],
+            "avg_roe":       f(r[2]),
+            "avg_roce":      f(r[3]),
+            "avg_margin":    f(r[4]),
+            "avg_growth":    f(r[5]),
+            "avg_score":     f(r[6])
+        }
+        for r in rows
+    ]
+
+@app.get("/api/leaderboard")
+def get_leaderboard():
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT c.company_id, c.company_name, c.nse_symbol,
+                   s.sector_name, r.roe, r.roce,
+                   r.net_margin, r.revenue_growth, b.total_score
+            FROM financial_ratios r
+            JOIN companies c ON r.company_id = c.company_id
+            JOIN sectors s ON c.sector_id = s.sector_id
             LEFT JOIN benchmark_scores b ON b.company_id = c.company_id
                 AND b.quarter = r.quarter
             WHERE r.quarter = 'Q4FY25'
-            GROUP BY s.sector_name
-            ORDER BY avg_score DESC
+              AND b.total_score IS NOT NULL
+            ORDER BY b.total_score DESC
+            LIMIT 10
         """)).fetchall()
 
     def f(v): return float(v) if v is not None else 0
 
     return [
         {
-            "sector":     r[0],
-            "companies":  r[1],
-            "avg_roe":    f(r[2]),
-            "avg_roce":   f(r[3]),
-            "avg_margin": f(r[4]),
-            "avg_growth": f(r[5]),
-            "avg_score":  f(r[6])
+            "company_id":     r[0],
+            "company_name":   r[1],
+            "nse_symbol":     r[2],
+            "sector_name":    r[3],
+            "roe":            f(r[4]),
+            "roce":           f(r[5]),
+            "net_margin":     f(r[6]),
+            "revenue_growth": f(r[7]),
+            "total_score":    f(r[8]),
         }
         for r in rows
     ]
 
-# ── ENDPOINT 6: Top performers leaderboard ─────────────
-@app.get("/api/leaderboard")
-def get_leaderboard():
-    with engine.connect() as conn:
-        def top(metric, col):
-            rows = conn.execute(text(f"""
-                SELECT c.company_name, s.sector_name,
-                       r.{col}, b.total_score
-                FROM financial_ratios r
-                JOIN companies c ON r.company_id = c.company_id
-                JOIN sectors s ON c.sector_id = s.sector_id
-                LEFT JOIN benchmark_scores b
-                    ON b.company_id = c.company_id
-                    AND b.quarter = r.quarter
-                WHERE r.quarter = 'Q4FY25'
-                  AND r.{col} IS NOT NULL
-                ORDER BY r.{col} DESC LIMIT 5
-            """)).fetchall()
-            return [{"name": r[0], "sector": r[1],
-                     "value": float(r[2]),
-                     "score": float(r[3]) if r[3] else 0}
-                    for r in rows]
-
-        return {
-            "top_roe":    top("ROE",            "roe"),
-            "top_roce":   top("ROCE",           "roce"),
-            "top_margin": top("Net Margin",      "net_margin"),
-            "top_growth": top("Revenue Growth",  "revenue_growth"),
-        }
-
-# ── ENDPOINT 7: Peer comparison ────────────────────────
 @app.get("/api/compare")
 def compare_companies(ids: str):
     id_list = [int(x) for x in ids.split(",")]
@@ -309,16 +281,13 @@ def compare_companies(ids: str):
                 SELECT c.company_name, s.sector_name,
                        r.roe, r.roce, r.net_margin,
                        r.debt_to_equity, r.revenue_growth,
-                       r.cagr_3y, r.ebitda_margin,
-                       b.total_score
+                       r.cagr_3y, r.ebitda_margin, b.total_score
                 FROM financial_ratios r
                 JOIN companies c ON r.company_id = c.company_id
                 JOIN sectors s ON c.sector_id = s.sector_id
-                LEFT JOIN benchmark_scores b
-                    ON b.company_id = c.company_id
+                LEFT JOIN benchmark_scores b ON b.company_id = c.company_id
                     AND b.quarter = r.quarter
-                WHERE r.company_id = :id
-                  AND r.quarter = 'Q4FY25'
+                WHERE r.company_id = :id AND r.quarter = 'Q4FY25'
             """), {"id": cid}).fetchone()
 
             if row:

@@ -31,6 +31,7 @@ def compute_ebitda_margin(ebitda, revenue):
         return None
 
 def compute_roe(net_profit, equity):
+    # equity must be equity_capital + reserves (not just face-value equity_capital)
     try:
         if net_profit is None or equity is None:
             return None
@@ -40,11 +41,16 @@ def compute_roe(net_profit, equity):
     except:
         return None
 
-def compute_roce(ebitda, total_assets, current_liab=0):
-    capital_employed = (total_assets or 0) - (current_liab or 0)
-    if not capital_employed or capital_employed == 0:
+def compute_roce(ebit, capital_employed):
+    # capital_employed = equity + borrowings
+    try:
+        if ebit is None or capital_employed is None:
+            return None
+        if float(capital_employed) == 0:
+            return None
+        return round((float(ebit) / float(capital_employed)) * 100, 2)
+    except:
         return None
-    return round((ebitda / capital_employed) * 100, 2)
 
 def compute_de_ratio(total_debt, equity):
     try:
@@ -54,30 +60,38 @@ def compute_de_ratio(total_debt, equity):
     except:
         return None
 
-def compute_pe_ratio(price, eps):
-    if not eps or eps == 0:
-        return None
-    return round(price / eps, 2)
-
 def compute_asset_turnover(revenue, total_assets):
     if not total_assets or total_assets == 0:
         return None
     return round(revenue / total_assets, 2)
 
-# ── From quarterly_results ─────────────────────────────────────────────────
+# ── From quarterly_results joined to balance_sheet ────────────────────────
 
 def fetch_all_results():
     result = conn.execute(text("""
         SELECT
-            q.result_id, q.company_id, c.company_name,
-            q.quarter, q.period_end, q.revenue, q.net_profit,
-            q.ebitda, q.total_debt, q.equity, q.total_assets,
-            q.eps, c.market_cap
+            q.company_id,
+            c.company_name,
+            q.quarter,
+            q.period_end,
+            q.revenue,
+            q.net_profit,
+            q.ebitda,
+            q.total_debt,
+            q.total_assets,
+            q.eps,
+            c.market_cap,
+            COALESCE(bs.equity_capital, 0) + COALESCE(bs.reserves, 0) AS true_equity,
+            COALESCE(bs.borrowings, q.total_debt, 0)                   AS borrowings
         FROM quarterly_results q
         JOIN companies c ON q.company_id = c.company_id
+        LEFT JOIN balance_sheet bs
+            ON  bs.company_id  = q.company_id
+            AND bs.fiscal_year = CONCAT('FY', RIGHT(q.quarter, 2))
         ORDER BY q.company_id, q.period_end
     """))
     return result.fetchall()
+
 
 def calculate_and_store_all():
     rows = fetch_all_results()
@@ -87,31 +101,43 @@ def calculate_and_store_all():
     skipped  = 0
 
     for row in rows:
-        company_id   = row[1]
-        company_name = row[2]
-        quarter      = row[3]
-        revenue      = row[5]
-        net_profit   = row[6]
-        ebitda       = row[7]
-        total_debt   = row[8]
-        equity       = row[9]
-        total_assets = row[10]
-        eps          = row[11]
-        market_cap   = row[12]
+        company_id   = row[0]
+        company_name = row[1]
+        quarter      = row[2]
+        revenue      = row[4]
+        net_profit   = row[5]
+        ebitda       = row[6]
+        total_assets = row[8]
+        market_cap   = row[10]
+        true_equity  = row[11]
+        borrowings   = row[12]
 
         if not revenue:
             skipped += 1
             continue
 
-        net_margin     = compute_net_margin(net_profit, revenue)
-        ebitda_margin  = compute_ebitda_margin(ebitda, revenue)
-        roe            = compute_roe(net_profit, equity)
-        roce           = compute_roce(ebitda, total_assets)
-        de_ratio       = compute_de_ratio(total_debt, equity)
-        asset_turnover = compute_asset_turnover(revenue, total_assets)
+        net_margin    = compute_net_margin(net_profit, revenue)
+        ebitda_margin = compute_ebitda_margin(ebitda, revenue)
+
+        # ROE = net_profit / (equity_capital + reserves)
+        roe = compute_roe(net_profit, true_equity if true_equity and float(true_equity) > 0 else None)
+
+        # EBIT proxy using net_profit (quarterly data doesn't have interest separately)
+        ebit = float(net_profit) if net_profit is not None else None
+
+        # Capital employed = equity + borrowings
+        cap_employed = None
+        if true_equity is not None and borrowings is not None:
+            try:
+                cap_employed = float(true_equity) + float(borrowings)
+            except:
+                pass
+
+        roce     = compute_roce(ebit, cap_employed)
+        de_ratio = compute_de_ratio(borrowings, true_equity if true_equity and float(true_equity) > 0 else None)
 
         pe_ratio = None
-        if net_profit and net_profit > 0 and market_cap:
+        if net_profit and float(net_profit) > 0 and market_cap:
             pe_ratio = round(float(market_cap) / float(net_profit), 2)
 
         try:
@@ -138,37 +164,43 @@ def calculate_and_store_all():
     conn.commit()
     print(f"Done! Inserted/updated: {inserted}  Skipped: {skipped}")
 
-# ── From profit_loss (fallback for new companies) ─────────────────────────
+
+# ── From profit_loss + balance_sheet (covers ALL companies) ───────────────
 
 def calculate_from_profit_loss():
     result = conn.execute(text("""
         SELECT DISTINCT c.company_id, c.company_name
         FROM companies c
         JOIN profit_loss pl ON pl.company_id = c.company_id
-        WHERE c.company_id NOT IN (
-            SELECT DISTINCT company_id FROM quarterly_results
-            WHERE revenue IS NOT NULL AND equity IS NOT NULL
-        )
     """))
     companies = result.fetchall()
-    print(f"\nProcessing {len(companies)} companies from profit_loss table...")
+    print(f"\nProcessing {len(companies)} companies from profit_loss + balance_sheet...")
 
     for company in companies:
         company_id   = company[0]
         company_name = company[1]
 
         rows = conn.execute(text("""
-            SELECT pl.fiscal_year, pl.sales, pl.net_profit,
-                   pl.interest, pl.depreciation,
-                   bs.equity_capital, bs.reserves, bs.borrowings,
-                   bs.total_assets, bs.other_liabilities
+            SELECT
+                pl.fiscal_year,
+                pl.sales,
+                pl.net_profit,
+                pl.interest,
+                pl.depreciation,
+                COALESCE(bs.equity_capital, 0) AS eq_capital,
+                COALESCE(bs.reserves, 0)       AS reserves,
+                COALESCE(bs.borrowings, 0)     AS borrowings,
+                bs.total_assets,
+                bs.other_liabilities
             FROM profit_loss pl
             LEFT JOIN balance_sheet bs
-                ON bs.company_id = pl.company_id
-               AND bs.fiscal_year = pl.fiscal_year
+                ON  bs.company_id  = pl.company_id
+                AND bs.fiscal_year = pl.fiscal_year
             WHERE pl.company_id = :cid
             ORDER BY pl.fiscal_year
         """), {"cid": company_id}).fetchall()
+
+        prev_sales = None
 
         for row in rows:
             fy           = row[0]
@@ -176,71 +208,76 @@ def calculate_from_profit_loss():
             net_profit   = row[2]
             interest     = row[3]
             depreciation = row[4]
-            eq_capital   = row[5]
-            reserves     = row[6]
-            borrowings   = row[7]
+            eq_capital   = float(row[5] or 0)
+            reserves     = float(row[6] or 0)
+            borrowings   = float(row[7] or 0)
             total_assets = row[8]
-            other_liab   = row[9]
 
             if not sales:
+                prev_sales = None
                 continue
 
             quarter = f"Q4{fy}"
 
             net_margin = compute_net_margin(net_profit, sales)
 
+            # EBITDA = net profit + interest + depreciation
             ebitda = None
-            if net_profit and interest and depreciation:
+            if net_profit is not None and interest is not None and depreciation is not None:
                 try:
                     ebitda = float(net_profit) + float(interest) + float(depreciation)
                 except:
                     pass
             ebitda_margin = compute_ebitda_margin(ebitda, sales)
 
-            equity = None
-            if eq_capital is not None and reserves is not None:
-                try:
-                    equity = float(eq_capital) + float(reserves)
-                except:
-                    pass
+            # True equity = equity_capital + reserves  ← THE KEY FIX
+            true_equity = eq_capital + reserves
 
-            roe = compute_roe(net_profit, equity)
+            roe = compute_roe(net_profit, true_equity if true_equity > 0 else None)
 
+            # EBIT = net_profit + interest
             ebit = None
-            if net_profit and interest:
+            if net_profit is not None and interest is not None:
                 try:
                     ebit = float(net_profit) + float(interest)
                 except:
                     pass
 
-            cap_employed = None
-            if equity is not None and borrowings is not None:
+            # Capital employed = equity + borrowings
+            cap_employed = true_equity + borrowings
+            roce = compute_roce(ebit, cap_employed if cap_employed > 0 else None)
+
+            de_ratio = compute_de_ratio(borrowings, true_equity if true_equity > 0 else None)
+
+            # Revenue growth YoY
+            revenue_growth = None
+            if prev_sales and float(prev_sales) != 0 and sales:
                 try:
-                    cap_employed = equity + float(borrowings)
+                    revenue_growth = round((float(sales) - float(prev_sales)) / float(prev_sales) * 100, 2)
                 except:
                     pass
-
-            roce = None
-            if ebit and cap_employed and cap_employed != 0:
-                roce = round(ebit / cap_employed * 100, 2)
-
-            de_ratio = compute_de_ratio(borrowings, equity)
+            prev_sales = sales
 
             try:
                 conn.execute(text("""
                     INSERT INTO financial_ratios
                         (company_id, quarter, roe, roce,
-                         debt_to_equity, net_margin)
-                    VALUES (:cid, :q, :roe, :roce, :de, :nm)
+                         debt_to_equity, net_margin, revenue_growth)
+                    VALUES (:cid, :q, :roe, :roce, :de, :nm, :rg)
                     ON DUPLICATE KEY UPDATE
                         roe=VALUES(roe),
                         roce=VALUES(roce),
                         debt_to_equity=VALUES(debt_to_equity),
-                        net_margin=VALUES(net_margin)
+                        net_margin=VALUES(net_margin),
+                        revenue_growth=VALUES(revenue_growth)
                 """), {
-                    "cid":  company_id, "q": quarter,
-                    "roe":  roe, "roce": roce,
-                    "de":   de_ratio, "nm": net_margin,
+                    "cid":  company_id,
+                    "q":    quarter,
+                    "roe":  roe,
+                    "roce": roce,
+                    "de":   de_ratio,
+                    "nm":   net_margin,
+                    "rg":   revenue_growth,
                 })
             except Exception as e:
                 print(f"  ERROR {company_name} {quarter}: {e}")
@@ -249,6 +286,7 @@ def calculate_from_profit_loss():
 
     conn.commit()
     print("Done!")
+
 
 # ── Summary ────────────────────────────────────────────────────────────────
 
@@ -263,6 +301,7 @@ def print_summary():
         JOIN sectors s ON c.sector_id = s.sector_id
         WHERE r.quarter = 'Q4FY25'
         ORDER BY r.roe DESC
+        LIMIT 30
     """))
     rows = result.fetchall()
 
@@ -278,6 +317,7 @@ def print_summary():
             f"{str(row[6] or 'N/A'):>6} "
             f"{str(row[7] or 'N/A'):>8}"
         )
+
 
 # ── Run ────────────────────────────────────────────────────────────────────
 
