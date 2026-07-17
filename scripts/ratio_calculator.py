@@ -291,6 +291,10 @@ def calculate_from_profit_loss():
 # ── Summary ────────────────────────────────────────────────────────────────
 
 def print_summary():
+    latest_q = conn.execute(text("""
+        SELECT MAX(quarter) FROM financial_ratios
+    """)).fetchone()[0]
+
     result = conn.execute(text("""
         SELECT
             c.company_name, s.sector_name,
@@ -299,12 +303,13 @@ def print_summary():
         FROM financial_ratios r
         JOIN companies c ON r.company_id = c.company_id
         JOIN sectors s ON c.sector_id = s.sector_id
-        WHERE r.quarter = 'Q4FY25'
+        WHERE r.quarter = :q
         ORDER BY r.roe DESC
         LIMIT 30
-    """))
+    """), {"q": latest_q})
     rows = result.fetchall()
 
+    print(f"\nShowing latest quarter: {latest_q}")
     print(f"\n{'Company':<30} {'Sector':<22} {'ROE':>8} {'ROCE':>6} {'D/E':>6} {'NM%':>6} {'PE':>8}")
     print("-" * 90)
     for row in rows:
@@ -318,13 +323,11 @@ def print_summary():
             f"{str(row[7] or 'N/A'):>8}"
         )
 
-
 # ── Run ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     print("BSE Portal - Ratio Calculator")
     print("=" * 50)
-    calculate_and_store_all()
     calculate_from_profit_loss()
     print_summary()
     conn.close()

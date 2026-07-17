@@ -31,14 +31,14 @@ header[data-testid="stHeader"] { background: transparent; }
 """, unsafe_allow_html=True)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
+# pages/excellence_model.py
 RATIO_WEIGHTS = {
     "Net Profit Margin": 0.10, "EBITDA Margin": 0.10,
-    "ROE": 0.08, "ROCE": 0.07, "Operating Profit Margin": 0.05,
+    "ROE": 0.08, "ROCE": 0.05, "Operating Profit Margin": 0.02,
     "Revenue Growth YoY": 0.10, "3Y Revenue CAGR": 0.08,
-    "NP Growth YoY": 0.07, "Asset Turnover": 0.07,
-    "Debtor Days": 0.05, "Inventory Turnover": 0.08,
-    "Debt to Equity": 0.08, "Interest Coverage": 0.07,
-    "EPS Growth YoY": 0.05, "Current Ratio": 0.05,
+    "NP Growth YoY": 0.05, "EPS Growth YoY": 0.02,
+    "Asset Turnover": 0.07, "Debtor Days": 0.05, "Inventory Turnover": 0.08,
+    "Debt to Equity": 0.08, "Interest Coverage": 0.07, "Current Ratio": 0.05,
 }
 HIGHER_BETTER = {
     "Net Profit Margin": True, "EBITDA Margin": True, "ROE": True,
@@ -312,7 +312,9 @@ with tab1:
 # TAB 2 — OVERALL CROSS-SECTOR RANKINGS
 # ════════════════════════════════════════════════════════
 with tab2:
-    st.markdown('<div class="section-hdr">Overall rankings — all 42 companies, cross-sector comparison</div>', unsafe_allow_html=True)
+
+    st.markdown(f'<div class="section-hdr">Overall rankings — all {len(all_companies)} companies, cross-sector comparison</div>', unsafe_allow_html=True)
+
     st.info("ℹ️ These scores rank all companies against each other regardless of sector. Sector rankings (Tab 1) are more fair for peer comparison.", icon="ℹ️")
 
     min_score = st.slider("Minimum score", 0, 90, 0, 5, key="overall_slider")

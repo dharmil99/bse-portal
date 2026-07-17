@@ -93,6 +93,70 @@ FILE_MAP = {
  
     # Infrastructure
     "Larsen & Toubro":    "Larsen & Toubro Limited",
+    # Information Technology
+    "Tata Elxsi":         "Tata Elxsi Limited",
+    "Mphasis":            "Mphasis Limited",
+    "Coforge":            "Coforge Limited",
+    "Persistent Systems": "Persistent Systems Limited",
+    "Mindtree":           "LTIMindtree Limited",   # ← CONFIRM: swap to "Mindtree Limited" if this is legacy pre-merger data
+
+    # FMCG
+    "Varun Beverages":    "Varun Beverages Limited",
+    "Colgate-Palmoliv":   "Colgate-Palmolive (India) Limited",
+    "Godrej Consumer":    "Godrej Consumer Products Limited",
+    "Marico":             "Marico Limited",
+    "Dabur India":        "Dabur India Limited",
+
+    # Pharmaceuticals
+    "Zydus Lifesci":      "Zydus Lifesciences Limited",
+    "Torrent Pharma":     "Torrent Pharmaceuticals Limited",
+    "Aurobindo Pharma":   "Aurobindo Pharma Limited",
+    "Lupin":              "Lupin Limited",
+
+    # Energy
+    "B P C L":            "Bharat Petroleum Corporation Limited",
+    "GAIL (India)":       "GAIL (India) Limited",
+    "JSW Energy":         "JSW Energy Limited",
+    "Tata Power Co":      "Tata Power Company Limited",
+    "Adani Green":        "Adani Green Energy Limited",
+
+    # Metals & Mining
+    "NMDC":               "NMDC Limited",
+    "Hindustan Copper":   "Hindustan Copper Limited",
+    "Hindustan Zinc":     "Hindustan Zinc Limited",
+    "Jindal Steel":       "Jindal Steel & Power Limited",
+    "Natl. Aluminium":    "National Aluminium Company Limited",
+    "S A I L":            "Steel Authority of India Limited",
+    "Vedanta":            "Vedanta Limited",
+
+    # Cement
+    "Birla Corpn":        "Birla Corporation Limited",
+    "The Ramco Cement":   "The Ramco Cements Limited",
+    "JK Lakshmi Cem":     "JK Lakshmi Cement Limited",
+    "J K Cements":        "JK Cement Limited",
+    "Ambuja Cements":     "Ambuja Cements Limited",
+    "ACC":                "ACC Limited",
+    "Dalmia BharatLtd":   "Dalmia Bharat Limited",
+    "Shree Cement":       "Shree Cement Limited",
+
+    # Consumer
+    "Kalyan Jewellers":   "Kalyan Jewellers India Limited",
+    "Whirlpool India":    "Whirlpool of India Limited",
+    "Blue Star":          "Blue Star Limited",
+    "Dixon Technolog":    "Dixon Technologies (India) Limited",
+    "Voltas":             "Voltas Limited",
+    "Havells India":      "Havells India Limited",
+    "Asian Paints":       "Asian Paints Limited",
+
+    # Telecom
+    "Route Mobile":     "Route Mobile Limited",
+    "Tejas Networks":   "Tejas Networks Limited",
+    "Sterlite Tech":    "Sterlite Technologies Limited",
+    "HFCL":             "HFCL Limited",
+    "Railtel Corpn":    "Railtel Corporation of India Limited",
+    "M T N L":          "Mahanagar Telephone Nigam Limited",
+    "Tata Comm":        "Tata Communications Limited",
+    "Vodafone Idea":    "Vodafone Idea Limited",
 }
 
 def excel_date_to_year(val):
